@@ -125,22 +125,8 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
 }
 
 /* ============================================================
-   FIX: LEFT ALIGN DATE COLUMN
+   PRINT STYLES (REWRITTEN)
    ============================================================ */
-
-/* 1. Align the Header text "Date" to the left */
-.table-header span:first-child {
-    text-align: left;
-}
-
-/* 2. Force Date Inputs to align Left and fit fully */
-.entry-row input[type="date"] {
-    text-align: left !important;
-    padding-left: 0px; /* Remove extra padding to ensure full visibility */
-    padding-right: 0px;
-    width: 100%;
-}
-
 @media print {
     /* 1. Page Setup */
     @page {
@@ -155,11 +141,11 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
     }
 
     /* 3. Hide Unnecessary Elements */
-    header > div:last-child,
-    .panel-header button,
-    .delete-btn,
-    .toast-container,
-    .save-dot,
+    header > div:last-child, /* Top right controls */
+    .panel-header button,    /* Add/Delete buttons */
+    .delete-btn,            /* Delete icons */
+    .toast-container,       /* Notifications */
+    .save-dot, 
     #saveLabel {
         display: none !important;
     }
@@ -172,7 +158,7 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
         display: flex !important;
     }
 
-    /* 5. Force side-by-side layout */
+    /* 5. Force Side‑by‑Side Layout */
     .main-split {
         display: flex !important;
         flex-direction: row !important;
@@ -191,18 +177,18 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
         break-inside: avoid;
     }
 
-    /* 6. Column widths */
+    /* 6. Column Widths (Date column widened to 120px) */
     #incomeEntries .table-header,
     #incomeEntries .entry-row {
-        grid-template-columns: 100px 3fr 2fr 60px 30px !important;
+        grid-template-columns: 120px 3fr 2fr 60px 30px !important;
     }
 
     #expenseEntries .table-header,
     #expenseEntries .entry-row {
-        grid-template-columns: 100px 5fr 60px 30px !important;
+        grid-template-columns: 120px 5fr 60px 30px !important;
     }
 
-    /* 7. Row heights */
+    /* 7. Row Height & Alignment */
     .table-header {
         padding: 12px 16px !important;
         min-height: 42px !important;
@@ -214,7 +200,7 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
         align-items: center !important;
     }
 
-    /* 8. Input & text styling */
+    /* 8. Input & Text Styling */
     input, .bs-input-plain {
         border: none !important;
         background: transparent !important;
@@ -224,13 +210,13 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
         font-size: 12pt !important;
     }
 
-    /* 9. Text colors */
+    /* 9. Text Colors */
     :root {
         --text-primary: #000000;
         --text-secondary: #444444;
-        --income: #008000;
-        --expense: #cc0000;
-        --balance: #b8860b;
+        --income: #008000;    
+        --expense: #cc0000;   
+        --balance: #b8860b;   
     }
 
     .summary-card {
@@ -241,30 +227,47 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
         margin-bottom: 20px;
     }
 
-    /* 10. Table styling */
+    /* 10. Table Header Styling */
     .table-header {
         color: black !important;
         border-bottom: 2px solid black;
         background: #f9f9f9 !important;
     }
-    .table-header span { color: black !important; }
+    .table-header span {
+        color: black !important;
+    }
 
+    /* 11. Table Row Styling */
     .entry-row {
         border-bottom: 1px solid #ddd !important;
         color: black !important;
     }
 
-    .entry-row input[type="date"] {
-        color: black !important;
+    /* 12. FIX: Left‑align Date Column (Header & Rows) */
+    .table-header > :first-child,
+    .entry-row > :first-child {
+        text-align: left !important;
     }
 
-    /* === NEW: Left-align date column === */
-    .entry-row > :first-child,
+    /* 13. FIX: Prevent Date Clipping (Full YYYY-MM-DD visible) */
     .entry-row input[type="date"] {
+        width: auto !important;
+        min-width: 110px !important;
+        font-size: 11pt !important;
+        font-family: monospace !important;
+        letter-spacing: normal !important;
+        background: white !important;
+        color: black !important;
+        border: none !important;
+        padding: 4px 2px !important;
+        box-sizing: content-box !important;
+        overflow: visible !important;
         text-align: left !important;
     }
-    .table-header > :first-child {
-        text-align: left !important;
+
+    /* Ensure the date cell itself never clips */
+    .entry-row > :first-child {
+        overflow: visible !important;
+        white-space: nowrap !important;
     }
-}
 }
