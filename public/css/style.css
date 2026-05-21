@@ -172,6 +172,7 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
         border-bottom: 2px solid #000;
         padding-bottom: 20px;
         margin-bottom: 20px;
+        display: flex !important;
     }
 
     /* Clean up the panels for paper */
@@ -205,6 +206,7 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
         box-shadow: none;
         border: 1px solid #ccc;
         color: black !important;
+        break-inside: avoid;
     }
     
     /* Ensure table headers are black */
