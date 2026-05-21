@@ -89,13 +89,12 @@ function escapeHtml(str) {
 }
 
 // ============================================================
-// SYNCING LOGIC (UPDATED BASED ON ORDER.HTML)
+// SYNCING LOGIC
 // ============================================================
 async function autoSyncOrders() {
-    console.log("Syncing orders based on provided schema...");
+    console.log("Syncing orders...");
     const freshOrders = await DB.find('orders');
 
-    // Composite key: "OrderID_ItemID" to prevent duplicates of specific items
     const existingKeys = new Set(state.incomeData.map(e => e.uniqueKey));
     let itemsAddedCount = 0;
 
@@ -152,7 +151,7 @@ async function manualSync() {
 }
 
 // ============================================================
-// RENDERING
+// RENDERING (TABLE VIEW)
 // ============================================================
 function renderMonthLabel() { document.getElementById('monthLabel').textContent = getMonthLabel(); }
 
@@ -161,30 +160,50 @@ function renderIncomeEntries() {
     const entries = state.incomeData.filter(e => isDateInMonth(e.date));
 
     if (entries.length === 0) {
-        container.innerHTML = `<div class="empty-state col-span-full py-10" style="color:var(--text-muted); text-align:center;">No income this month. Click Sync to load orders.</div>`;
+        container.innerHTML = `<div class="empty-state py-10" style="text-align:center; color:var(--text-muted);">No income this month. Click Sync to load orders.</div>`;
         return;
     }
 
-    container.innerHTML = entries.map(entry => `
-        <div class="income-card" data-entry-id="${entry._id}">
-            <button class="delete-btn" onclick="deleteEntry('income','${entry._id}')"><i class="fa-solid fa-trash"></i></button>
+    let html = `
+    <div class="table-header">
+        <span>Date</span>
+        <span>Product Name</span>
+        <span>Details (Form / Qty)</span>
+        <span style="text-align:right;">Amount</span>
+        <span></span>
+    </div>
+    `;
+
+    html += `<div class="table-view-container">`;
+    
+    entries.forEach(entry => {
+        html += `
+        <div class="entry-row" data-entry-id="${entry._id}">
+            <!-- Date -->
+            <input type="date" class="bs-input-plain" data-field="date" value="${entry.date ? entry.date.split('T')[0] : ''}">
             
-            <div class="card-top">
-                <div class="product-name">${escapeHtml(entry.product)}</div>
-                ${entry.orderNo ? `<span class="order-badge">#${escapeHtml(entry.orderNo)}</span>` : ''}
+            <!-- Product -->
+            <input type="text" class="bs-input-plain" data-field="product" value="${escapeHtml(entry.product)}" placeholder="Product Name">
+            
+            <!-- Details (Form + Qty) -->
+            <div style="display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
+                ${entry.form ? `<span class="detail-tag">${escapeHtml(entry.form)}</span>` : ''}
+                <span style="font-size:12px; color:var(--text-secondary);">${escapeHtml(entry.qtyUnit)}</span>
             </div>
-
-            <div class="card-details">
-                ${entry.form ? `<span class="detail-pill">${escapeHtml(entry.form)}</span>` : ''}
-                <span class="detail-pill" style="color:var(--text-primary); font-weight:500;">${escapeHtml(entry.qtyUnit)}</span>
-            </div>
-
-            <div class="card-footer">
-                <span style="font-size:11px; color:var(--text-muted);">TOTAL</span>
-                <div class="amount-display">${formatCurrency(entry.amount)}</div>
-            </div>
+            
+            <!-- Amount -->
+            <input type="number" class="bs-input-plain" data-field="amount" style="text-align:right;" value="${entry.amount || ''}" placeholder="0">
+            
+            <!-- Delete -->
+            <button onclick="deleteEntry('income','${entry._id}')" style="color:var(--text-muted); background:none; border:none; cursor:pointer; opacity:0.5;" title="Delete">
+                <i class="fa-solid fa-trash"></i>
+            </button>
         </div>
-    `).join('');
+        `;
+    });
+
+    html += `</div>`;
+    container.innerHTML = html;
 }
 
 function renderExpenseEntries() {
@@ -194,14 +213,29 @@ function renderExpenseEntries() {
         container.innerHTML = `<div class="empty-state py-8" style="text-align:center; color:var(--text-muted)">No expenses this month</div>`;
         return;
     }
-    container.innerHTML = entries.map(entry => `
-        <div class="grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 100px 1fr 100px 30px; border-bottom: 1px solid var(--border);" data-entry-id="${entry._id}">
-            <input type="date" class="bs-input" data-field="date" value="${entry.date ? entry.date.split('T')[0] : ''}">
-            <input type="text" class="bs-input" data-field="head" value="${escapeHtml(entry.head || '')}" placeholder="Head...">
-            <input type="number" class="bs-input" data-field="amount" value="${entry.amount || ''}" placeholder="0.00">
-            <button class="text-xs" style="color:var(--expense); cursor:pointer;" onclick="deleteEntry('expense','${entry._id}')"><i class="fa-solid fa-xmark"></i></button>
+    
+    let html = `
+    <div class="table-header">
+        <span>Date</span>
+        <span>Expense Head</span>
+        <span style="text-align:right;">Amount</span>
+        <span></span>
+    </div>
+    <div class="table-view-container">`;
+
+    html += entries.map(entry => `
+        <div class="entry-row" data-entry-id="${entry._id}">
+            <input type="date" class="bs-input-plain" data-field="date" value="${entry.date ? entry.date.split('T')[0] : ''}">
+            <input type="text" class="bs-input-plain" data-field="head" value="${escapeHtml(entry.head || '')}" placeholder="Head...">
+            <input type="number" class="bs-input-plain" data-field="amount" style="text-align:right;" value="${entry.amount || ''}" placeholder="0">
+            <button onclick="deleteEntry('expense','${entry._id}')" style="color:var(--text-muted); background:none; border:none; cursor:pointer; opacity:0.5;">
+                <i class="fa-solid fa-trash"></i>
+            </button>
         </div>
     `).join('');
+    
+    html += `</div>`;
+    container.innerHTML = html;
 }
 
 // ============================================================
@@ -227,9 +261,9 @@ async function addExpenseEntry() {
 
 async function deleteEntry(type, id) {
     if(!confirm("Delete this entry?")) return;
-    const card = document.querySelector(`#incomeEntries [data-entry-id="${id}"]`) || document.querySelector(`#expenseEntries [data-entry-id="${id}"]`);
-    if (card) {
-        card.style.opacity = '0.5';
+    const row = document.querySelector(`.entry-row[data-entry-id="${id}"]`);
+    if (row) {
+        row.style.opacity = '0.5';
         const success = await DB.deleteOne(type === 'income' ? 'income' : 'expenses', id);
         if (success) {
             if (type === 'income') state.incomeData = state.incomeData.filter(e => e._id !== id);
@@ -254,19 +288,20 @@ function debounceSave() {
 
 async function performSave() {
     // Save Income
-    const cards = document.querySelectorAll('.income-card');
+    const rows = document.querySelectorAll('#incomeEntries .entry-row');
     const incomes = [];
-    cards.forEach(card => {
-        const id = card.dataset.entryId;
-        const product = card.querySelector('.product-name').innerText;
-        const amount = parseFloat(card.querySelector('.amount-display').innerText.replace(/[^0-9.-]+/g,"")) || 0;
-        incomes.push({ _id: id, product, amount });
+    rows.forEach(row => {
+        const id = row.dataset.entryId;
+        const date = row.querySelector('[data-field="date"]').value;
+        const product = row.querySelector('[data-field="product"]').value;
+        const amount = parseFloat(row.querySelector('[data-field="amount"]').value) || 0;
+        incomes.push({ _id: id, date, product, amount });
     });
 
     // Save Expenses
-    const rows = document.querySelectorAll('#expenseEntries .grid');
+    const expenseRows = document.querySelectorAll('#expenseEntries .entry-row');
     const expenses = [];
-    rows.forEach(row => {
+    expenseRows.forEach(row => {
         const id = row.dataset.entryId;
         const date = row.querySelector('[data-field="date"]').value;
         const head = row.querySelector('[data-field="head"]').value;
@@ -297,11 +332,11 @@ async function performSave() {
 function updateSummary() {
     let totalIncome = 0, totalExpense = 0;
     
-    document.querySelectorAll('.income-card').forEach(card => {
-        totalIncome += parseFloat(card.querySelector('.amount-display').innerText.replace(/[^0-9.-]+/g,"")) || 0;
+    document.querySelectorAll('#incomeEntries .entry-row').forEach(row => {
+        totalIncome += parseFloat(row.querySelector('[data-field="amount"]')?.value || 0) || 0;
     });
     
-    document.querySelectorAll('#expenseEntries .grid').forEach(row => {
+    document.querySelectorAll('#expenseEntries .entry-row').forEach(row => {
         totalExpense += parseFloat(row.querySelector('[data-field="amount"]')?.value || 0) || 0;
     });
 
@@ -336,14 +371,14 @@ async function init() {
         state.incomeData = await DB.find('income');
         state.expenseData = await DB.find('expenses');
         
-        // Initial Sync
         await autoSyncOrders();
         
         renderIncomeEntries();
         renderExpenseEntries();
         updateSummary();
         
-        // Event Delegation
+        // Attach listeners to the containers for auto-save on input
+        document.getElementById('incomeEntries').addEventListener('input', () => { updateSummary(); debounceSave(); });
         document.getElementById('expenseEntries').addEventListener('input', () => { updateSummary(); debounceSave(); });
         
         showToast('Loaded', 'success');
@@ -353,5 +388,4 @@ async function init() {
     }
 }
 
-// Start the app
 init();
