@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Balance Sheet (Synced)</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -17,124 +19,13 @@
             }
         }
     </script>
+    
+    <!-- Google Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@200;400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --bg-deep: #080a10;
-            --bg-primary: #0c0f18;
-            --bg-card: #121622;
-            --bg-input: #0a0d15;
-            --border: #1f2437;
-            --text-primary: #e4e7f0;
-            --text-secondary: #8890ab;
-            --text-muted: #4e5573;
-            --income: #10b981;
-            --income-soft: rgba(16,185,129,0.10);
-            --expense: #f43f5e;
-            --expense-soft: rgba(244,63,94,0.10);
-            --balance: #f59e0b;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--bg-deep); color: var(--text-primary); min-height: 100vh; }
-        h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
-        
-        /* Inputs */
-        .bs-input {
-            background: var(--bg-input); border: 1px solid var(--border); color: var(--text-primary);
-            padding: 8px 12px; border-radius: 6px; font-family: inherit; font-size: 13px; width: 100%;
-        }
-        .bs-input:focus { outline: none; border-color: var(--income); }
-        
-        /* Block Grid */
-        .income-grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 16px;
-            max-height: 600px;
-            overflow-y: auto;
-            padding: 16px;
-        }
-
-        /* The Block Design */
-        .income-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            gap: 12px;
-            position: relative;
-            transition: transform 0.2s;
-        }
-        .income-card:hover { border-color: var(--income); transform: translateY(-2px); }
-
-        .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-        
-        .product-name {
-            font-weight: 600; font-size: 15px; color: var(--text-primary); line-height: 1.4;
-        }
-        .order-badge {
-            background: var(--income-soft); color: var(--income); font-size: 10px; padding: 2px 6px;
-            border-radius: 4px; white-space: nowrap; font-weight: 700; border: 1px solid rgba(16,185,129,0.2);
-        }
-
-        .card-details {
-            font-size: 13px; color: var(--text-secondary); display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
-        }
-        .detail-pill {
-            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-            padding: 4px 8px; border-radius: 4px; font-size: 12px;
-        }
-
-        .card-footer {
-            margin-top: auto; border-top: 1px solid var(--border); padding-top: 12px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .amount-display {
-            color: var(--income); font-weight: 700; font-size: 18px; font-family: 'Space Grotesk', monospace;
-        }
-
-        .delete-btn {
-            position: absolute; top: 10px; right: 10px; opacity: 0; cursor: pointer; color: var(--text-muted);
-            transition: 0.2s; background: rgba(0,0,0,0.5); border-radius: 50%; width: 24px; height: 24px;
-            display: flex; align-items: center; justify-content: center; font-size: 12px;
-        }
-        .income-card:hover .delete-btn { opacity: 1; }
-        .delete-btn:hover { color: var(--expense); background: var(--expense-soft); }
-
-        /* Layout & Utility */
-        .split-col { flex: 1; min-width: 0; overflow: hidden; }
-        .col-divider { width: 1px; background: var(--border); flex-shrink: 0; }
-
-        .summary-card {
-            border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px;
-            background: var(--bg-card); position: relative; overflow: hidden;
-        }
-        .summary-card .accent-bar { position: absolute; top: 0; left: 0; right: 0; height: 2px; }
-
-        .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
-        .panel-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-
-        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-        .toast { padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; transform: translateX(120%); transition: all 0.3s cubic-bezier(0.16,1,0.3,1); pointer-events: auto; backdrop-filter: blur(12px); }
-        .toast.show { transform: translateX(0); }
-        .toast.success { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.25); color: #34d399; }
-        .toast.info { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.25); color: #60a5fa; }
-
-        .save-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); transition: background 0.3s; }
-        .save-dot.saving { background: var(--balance); animation: pulse 1s infinite; }
-        .save-dot.saved { background: var(--income); }
-        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
-
-        @media (max-width: 900px) {
-            .summary-grid { grid-template-columns: 1fr !important; }
-            .main-split { flex-direction: column !important; }
-            .col-divider { width: 100% !important; height: 1px !important; }
-        }
-    </style>
+    
+    <!-- YOUR CUSTOM CSS FILE -->
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -152,12 +43,14 @@
             </div>
 
             <div class="flex items-center gap-3 flex-wrap">
+                <!-- Month Navigator -->
                 <div class="flex items-center gap-1 px-2 py-1 rounded-lg" style="background:var(--bg-card);border:1px solid var(--border);">
                     <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--bg-primary)] transition" onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left text-xs" style="color:var(--text-secondary)"></i></button>
                     <span id="monthLabel" class="px-3 text-sm font-medium font-display" style="color:var(--text-primary);min-width:120px;text-align:center;"></span>
                     <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--bg-primary)] transition" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right text-xs" style="color:var(--text-secondary)"></i></button>
                 </div>
 
+                <!-- Sync Button -->
                 <button id="syncBtn" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all hover:brightness-110"
                     style="background:var(--income-soft);border:1px solid rgba(16,185,129,0.2);color:var(--income);"
                     onclick="manualSync()">
@@ -165,6 +58,7 @@
                     <span>Sync Orders</span>
                 </button>
 
+                <!-- Save Status -->
                 <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs" style="background:var(--bg-card);border:1px solid var(--border);">
                     <div id="saveDot" class="save-dot saved"></div>
                     <span id="saveLabel" style="color:var(--text-muted)">All saved</span>
@@ -194,16 +88,15 @@
         <!-- Main Panel -->
         <div class="panel">
             <div class="panel-header">
-                <h2 class="text-sm font-bold font-display" style="color:var(--text-primary)">INCOME ENTRIES</h2>
+                <h2 class="text-sm font-bold font-display" style="color:var(--text-primary)">ENTRIES</h2>
             </div>
 
             <div class="flex main-split" style="min-height: 500px;">
                 
                 <!-- INCOME SIDE -->
                 <div class="split-col">
-                    <div id="incomeEntries" class="income-grid-container">
-                        <!-- Blocks will be injected here -->
-                    </div>
+                    <!-- The JS will inject the Table Header and Rows into this div -->
+                    <div id="incomeEntries"></div>
                     
                     <div class="px-5 py-3 items-center flex justify-between" style="border-top: 2px solid var(--border); background:rgba(16,185,129,0.03);">
                         <span class="text-xs font-bold tracking-wider" style="color:var(--text-muted)">TOTAL</span>
@@ -211,14 +104,13 @@
                     </div>
                 </div>
 
-                <!-- EXPENSE SIDE (Simplified) -->
+                <!-- EXPENSE SIDE -->
                 <div class="col-divider"></div>
                 <div class="split-col">
-                    <div class="grid gap-2 px-5 py-2.5 text-[10px] font-semibold tracking-widest" style="grid-template-columns: 100px 1fr 100px 30px; color:var(--text-muted); border-bottom:1px solid var(--border); background:rgba(244,63,94,0.03);">
-                        <span>DATE</span><span>EXPENSE HEAD</span><span class="text-right">AMOUNT</span><span></span>
-                    </div>
-                    <div id="expenseEntries" style="max-height: 600px; overflow-y: auto;"></div>
-                    <div class="grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 100px 1fr 100px 30px; border-top: 2px solid var(--border); background:rgba(244,63,94,0.03);">
+                    <!-- The JS will inject the Table Header and Rows into this div -->
+                    <div id="expenseEntries"></div>
+                    
+                    <div class="px-5 py-3 items-center flex justify-between" style="border-top: 2px solid var(--border); background:rgba(244,63,94,0.03);">
                         <span></span>
                         <span class="text-xs font-bold tracking-wider" style="color:var(--text-muted)">TOTAL</span>
                         <span id="expenseTotalInline" class="text-sm font-bold font-display text-right" style="color:var(--expense)">NPR 0</span>
@@ -231,375 +123,10 @@
 
     </div>
 
-    <!-- Toasts -->
+    <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <script>
-    // ============================================================
-    // DATABASE SERVICE
-    // ============================================================
-    const DB = {
-        async find(collection) {
-            try {
-                const res = await fetch(`/api/${collection}`);
-                if (!res.ok) throw new Error('Fetch failed');
-                return await res.json();
-            } catch (err) {
-                console.error(`DB.find error [${collection}]:`, err);
-                return [];
-            }
-        },
-        async saveAll(collection, docs) {
-            try {
-                const res = await fetch(`/api/${collection}/sync`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(docs)
-                });
-                return res.ok;
-            } catch (err) {
-                console.error(`DB.saveAll error [${collection}]:`, err);
-                return false;
-            }
-        },
-        async insertOne(collection, doc) {
-            try {
-                const res = await fetch(`/api/${collection}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(doc)
-                });
-                if (!res.ok) throw new Error('Insert failed');
-                return await res.json();
-            } catch (err) {
-                console.error(`DB.insertOne error [${collection}]:`, err);
-                return null;
-            }
-        },
-        async deleteOne(collection, id) {
-            try {
-                const res = await fetch(`/api/${collection}/${id}`, { method: 'DELETE' });
-                return res.ok;
-            } catch (err) {
-                console.error(`DB.deleteOne error [${collection}]:`, err);
-                return false;
-            }
-        }
-    };
-
-    // ============================================================
-    // APPLICATION STATE
-    // ============================================================
-    const state = {
-        currentYear: new Date().getFullYear(),
-        currentMonth: new Date().getMonth(),
-        saveTimeout: null,
-        incomeData: [],
-        expenseData: [],
-        orderData: []
-    };
-
-    // ============================================================
-    // UTILITIES
-    // ============================================================
-    function formatCurrency(amount) {
-        return 'NPR ' + (parseFloat(amount) || 0).toLocaleString('en-NP');
-    }
-    function getMonthLabel() {
-        const m = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-        return `${m[state.currentMonth]} ${state.currentYear}`;
-    }
-    function isDateInMonth(dateStr) {
-        if (!dateStr) return false;
-        const d = new Date(dateStr);
-        return !isNaN(d.getTime()) && d.getFullYear() === state.currentYear && d.getMonth() === state.currentMonth;
-    }
-    function todayStr() {
-        const d = new Date();
-        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    }
-    function escapeHtml(str) {
-        if (!str) return '';
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
-    }
-
-    // ============================================================
-    // SYNCING LOGIC (UPDATED BASED ON ORDER.HTML)
-    // ============================================================
-    async function autoSyncOrders() {
-        console.log("Syncing orders based on provided schema...");
-        const freshOrders = await DB.find('orders');
-
-        // We use a composite key to identify specific items within orders
-        // Format: "OrderID_ItemID" (e.g., "6a0d6371_111")
-        const existingKeys = new Set(state.incomeData.map(e => e.uniqueKey));
-        
-        let itemsAddedCount = 0;
-
-        if (freshOrders && Array.isArray(freshOrders)) {
-            for (const order of freshOrders) {
-                // Check if order has items array
-                if (order.items && Array.isArray(order.items)) {
-                    const orderDate = order.timestamp ? new Date(order.timestamp).toISOString().split('T')[0] : todayStr();
-                    const shortOrderId = String(order._id).substring(0, 8);
-
-                    for (const item of order.items) {
-                        // Create unique key for this specific line item
-                        const itemKey = `${order._id}_${item.id || item.name}`;
-                        
-                        // If this exact item is not in our income sheet yet
-                        if (!existingKeys.has(itemKey)) {
-                            const newEntry = await DB.insertOne('income', {
-                                date: orderDate,
-                                product: item.name || 'Unknown Item',
-                                form: item.form || '',
-                                qtyUnit: `${item.qty || 1} ${item.unit || ''}`,
-                                amount: (item.qty || 1) * (item.price || 0),
-                                uniqueKey: itemKey, // Save this to prevent duplicates
-                                orderNo: shortOrderId
-                            });
-                            
-                            if (newEntry) {
-                                state.incomeData.push(newEntry);
-                                itemsAddedCount++;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if (itemsAddedCount > 0) {
-            showToast(`Synced ${itemsAddedCount} new item(s)`, 'success');
-            renderIncomeEntries();
-            updateSummary();
-        } else {
-            console.log("No new items found.");
-        }
-    }
-
-    async function manualSync() {
-        const btn = document.getElementById('syncBtn');
-        const icon = btn.querySelector('i');
-        icon.classList.add('fa-spin');
-        btn.disabled = true;
-        
-        await autoSyncOrders();
-        
-        icon.classList.remove('fa-spin');
-        btn.disabled = false;
-        showToast('Sync complete', 'info');
-    }
-
-    // ============================================================
-    // RENDERING
-    // ============================================================
-    function renderMonthLabel() { document.getElementById('monthLabel').textContent = getMonthLabel(); }
-
-    function renderIncomeEntries() {
-        const container = document.getElementById('incomeEntries');
-        const entries = state.incomeData.filter(e => isDateInMonth(e.date));
-
-        if (entries.length === 0) {
-            container.innerHTML = `<div class="empty-state col-span-full py-10" style="color:var(--text-muted); text-align:center;">No income this month. Click Sync to load orders.</div>`;
-            return;
-        }
-
-        container.innerHTML = entries.map(entry => `
-            <div class="income-card" data-entry-id="${entry._id}">
-                <button class="delete-btn" onclick="deleteEntry('income','${entry._id}')"><i class="fa-solid fa-trash"></i></button>
-                
-                <div class="card-top">
-                    <div class="product-name">${escapeHtml(entry.product)}</div>
-                    ${entry.orderNo ? `<span class="order-badge">#${escapeHtml(entry.orderNo)}</span>` : ''}
-                </div>
-
-                <div class="card-details">
-                    ${entry.form ? `<span class="detail-pill">${escapeHtml(entry.form)}</span>` : ''}
-                    <span class="detail-pill" style="color:var(--text-primary); font-weight:500;">${escapeHtml(entry.qtyUnit)}</span>
-                </div>
-
-                <div class="card-footer">
-                    <span style="font-size:11px; color:var(--text-muted);">TOTAL</span>
-                    <div class="amount-display">${formatCurrency(entry.amount)}</div>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function renderExpenseEntries() {
-        const container = document.getElementById('expenseEntries');
-        const entries = state.expenseData.filter(e => isDateInMonth(e.date));
-        if (entries.length === 0) {
-            container.innerHTML = `<div class="empty-state py-8" style="text-align:center; color:var(--text-muted)">No expenses this month</div>`;
-            return;
-        }
-        container.innerHTML = entries.map(entry => `
-            <div class="grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 100px 1fr 100px 30px; border-bottom: 1px solid var(--border);" data-entry-id="${entry._id}">
-                <input type="date" class="bs-input" data-field="date" value="${entry.date ? entry.date.split('T')[0] : ''}">
-                <input type="text" class="bs-input" data-field="head" value="${escapeHtml(entry.head || '')}" placeholder="Head...">
-                <input type="number" class="bs-input" data-field="amount" value="${entry.amount || ''}" placeholder="0.00">
-                <button class="text-xs" style="color:var(--expense); cursor:pointer;" onclick="deleteEntry('expense','${entry._id}')"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-        `).join('');
-    }
-
-    // ============================================================
-    // ACTIONS & SAVE
-    // ============================================================
-    async function addIncomeEntry() {
-        const newEntry = await DB.insertOne('income', { date: todayStr(), product: '', form: '', qtyUnit: '', amount: 0 });
-        if (newEntry) {
-            state.incomeData.push(newEntry);
-            renderIncomeEntries();
-            updateSummary();
-        }
-    }
-
-    async function addExpenseEntry() {
-        const newEntry = await DB.insertOne('expenses', { date: todayStr(), head: '', amount: 0 });
-        if (newEntry) {
-            state.expenseData.push(newEntry);
-            renderExpenseEntries();
-            updateSummary();
-        }
-    }
-
-    async function deleteEntry(type, id) {
-        if(!confirm("Delete this entry?")) return;
-        const card = document.querySelector(`#incomeEntries [data-entry-id="${id}"]`) || document.querySelector(`#expenseEntries [data-entry-id="${id}"]`);
-        if (card) {
-            card.style.opacity = '0.5';
-            const success = await DB.deleteOne(type === 'income' ? 'income' : 'expenses', id);
-            if (success) {
-                if (type === 'income') state.incomeData = state.incomeData.filter(e => e._id !== id);
-                else state.expenseData = state.expenseData.filter(e => e._id !== id);
-                
-                if (type === 'income') renderIncomeEntries();
-                else renderExpenseEntries();
-                updateSummary();
-                showToast('Entry deleted', 'success');
-            }
-        }
-    }
-
-    function debounceSave() {
-        const dot = document.getElementById('saveDot');
-        const label = document.getElementById('saveLabel');
-        dot.className = 'save-dot saving';
-        label.textContent = 'Saving...';
-        clearTimeout(state.saveTimeout);
-        state.saveTimeout = setTimeout(performSave, 800);
-    }
-
-    async function performSave() {
-        // Save Income
-        const cards = document.querySelectorAll('.income-card');
-        const incomes = [];
-        cards.forEach(card => {
-            const id = card.dataset.entryId;
-            const product = card.querySelector('.product-name').innerText;
-            const amount = parseFloat(card.querySelector('.amount-display').innerText.replace(/[^0-9.-]+/g,"")) || 0;
-            // We read the text content for display purposes, but ideally we might want editable inputs if you plan to change the synced data manually later.
-            // For now, we save back what we have.
-            incomes.push({ _id: id, product, amount });
-        });
-
-        // Save Expenses
-        const rows = document.querySelectorAll('#expenseEntries .grid');
-        const expenses = [];
-        rows.forEach(row => {
-            const id = row.dataset.entryId;
-            const date = row.querySelector('[data-field="date"]').value;
-            const head = row.querySelector('[data-field="head"]').value;
-            const amount = parseFloat(row.querySelector('[data-field="amount"]').value) || 0;
-            expenses.push({ _id: id, date, head, amount });
-        });
-
-        const incSuccess = await DB.saveAll('income', incomes);
-        const expSuccess = await DB.saveAll('expenses', expenses);
-
-        const dot = document.getElementById('saveDot');
-        const label = document.getElementById('saveLabel');
-        if (incSuccess && expSuccess) {
-            dot.className = 'save-dot saved';
-            label.textContent = 'All saved';
-            label.style.color = 'var(--income)';
-        } else {
-            dot.className = 'save-dot';
-            label.textContent = 'Save failed';
-            label.style.color = 'var(--expense)';
-        }
-        setTimeout(() => { dot.className = 'save-dot'; label.style.color = 'var(--text-muted)'; label.textContent = 'Auto-save active'; }, 3000);
-    }
-
-    // ============================================================
-    // SUMMARY & INIT
-    // ============================================================
-    function updateSummary() {
-        let totalIncome = 0, totalExpense = 0;
-        
-        // Sum Income Blocks
-        document.querySelectorAll('.income-card').forEach(card => {
-            totalIncome += parseFloat(card.querySelector('.amount-display').innerText.replace(/[^0-9.-]+/g,"")) || 0;
-        });
-        
-        // Sum Expenses
-        document.querySelectorAll('#expenseEntries .grid').forEach(row => {
-            totalExpense += parseFloat(row.querySelector('[data-field="amount"]')?.value || 0) || 0;
-        });
-
-        const net = totalIncome - totalExpense;
-        document.getElementById('totalIncome').textContent = formatCurrency(totalIncome);
-        document.getElementById('totalExpense').textContent = formatCurrency(totalExpense);
-        document.getElementById('netBalance').textContent = formatCurrency(net);
-        document.getElementById('incomeTotalInline').textContent = formatCurrency(totalIncome);
-        document.getElementById('expenseTotalInline').textContent = formatCurrency(totalExpense);
-    }
-
-    function changeMonth(delta) {
-        state.currentMonth += delta;
-        if (state.currentMonth > 11) { state.currentMonth = 0; state.currentYear++; }
-        else if (state.currentMonth < 0) { state.currentMonth = 11; state.currentYear--; }
-        renderMonthLabel(); renderIncomeEntries(); renderExpenseEntries(); updateSummary();
-    }
-
-    function showToast(msg, type='info') {
-        const container = document.getElementById('toastContainer');
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.innerHTML = `<span>${msg}</span>`;
-        container.appendChild(toast);
-        requestAnimationFrame(() => toast.classList.add('show'));
-        setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 350); }, 3000);
-    }
-
-    async function init() {
-        renderMonthLabel();
-        try {
-            state.incomeData = await DB.find('income');
-            state.expenseData = await DB.find('expenses');
-            
-            // Initial Sync
-            await autoSyncOrders();
-            
-            renderIncomeEntries();
-            renderExpenseEntries();
-            updateSummary();
-            
-            // Event Delegation for expenses (Income blocks are mostly read-only displays synced from DB)
-            document.getElementById('expenseEntries').addEventListener('input', () => { updateSummary(); debounceSave(); });
-            
-            showToast('Loaded', 'success');
-        } catch (err) {
-            console.error(err);
-            showToast('Error loading data', 'error');
-        }
-    }
-
-    init();
-    </script>
+    <!-- YOUR CUSTOM JS FILE -->
+    <script src="js/app.js"></script>
 </body>
 </html>
