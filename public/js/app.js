@@ -227,13 +227,19 @@ function renderIncomeEntries() {
 function renderExpenseEntries() {
     const container = document.getElementById('expenseEntries');
     const entries = state.expenseData.filter(e => isDateInMonth(e.date));
+    
     if (entries.length === 0) {
         container.innerHTML = `<div class="empty-state py-8" style="text-align:center; color:var(--text-muted)">No expenses this month</div>`;
         return;
     }
     
+    // UPDATED: Added inline style to define 4 specific columns
+    // 110px = Date Width
+    // 1fr   = Expense Head Width (Takes all remaining space -> WIDER)
+    // 120px = Amount Width
+    // 30px  = Action Button Width
     let html = `
-    <div class="table-header">
+    <div class="table-header" style="grid-template-columns: 110px 1fr 120px 30px;">
         <span>Date</span>
         <span>Expense Head</span>
         <span style="text-align:right;">Amount</span>
@@ -242,7 +248,8 @@ function renderExpenseEntries() {
     <div class="table-view-container">`;
 
     html += entries.map(entry => `
-        <div class="entry-row" data-entry-id="${entry._id}">
+        <!-- UPDATED: Added inline style to rows as well -->
+        <div class="entry-row" style="grid-template-columns: 110px 1fr 120px 30px;" data-entry-id="${entry._id}">
             <input type="date" class="bs-input-plain" data-field="date" value="${entry.date ? entry.date.split('T')[0] : ''}">
             <input type="text" class="bs-input-plain" data-field="head" value="${escapeHtml(entry.head || '')}" placeholder="Head...">
             <input type="number" class="bs-input-plain" data-field="amount" style="text-align:right;" value="${entry.amount || ''}" placeholder="0">
@@ -255,7 +262,6 @@ function renderExpenseEntries() {
     html += `</div>`;
     container.innerHTML = html;
 }
-
 // ============================================================
 // ACTIONS & SAVE
 // ============================================================
