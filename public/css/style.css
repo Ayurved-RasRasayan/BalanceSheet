@@ -206,6 +206,19 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
         display: none !important;
     }
 
+    /* Hide delete icons/buttons/logos */
+    .delete-icon,
+    .delete-btn,
+    [aria-label="Delete"],
+    button.delete-entry,
+    .entry-row .delete,
+    .entry-row button:last-child,
+    img[alt="delete"],
+    .fa-trash,
+    .fas.fa-trash {
+        display: none !important;
+    }
+
     header {
         border-bottom: 2px solid #000;
         padding-bottom: 20px;
