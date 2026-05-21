@@ -195,10 +195,10 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
     }
 
     /* 6. FIX: COLUMN WIDTHS FOR READABILITY */
-    /* Income: Date(130) | Prod(2fr) | Det(2fr) | Amt(600) | Del(30) */
+    /* Income: Date(130) | Prod(2fr) | Det(2fr) | Amt(60) | Del(30) */
     #incomeEntries .table-header,
     #incomeEntries .entry-row {
-        grid-template-columns: 130px 2fr 2fr 600px 30px !important; 
+        grid-template-columns: 130px 2fr 2fr 60px 30px !important; 
     }
 
     /* Expenses: Date(130) | Head(1fr) | Amt(140) | Del(30) */
