@@ -70,16 +70,6 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
     z-index: 10;
 }
 
-/* Left Align Date Column Header */
-.table-header span:first-child {
-    text-align: left;
-}
-
-/* Left Align Date Column Inputs (Forcing it) */
-.entry-row input[type="date"] {
-    text-align: left !important;
-}
-
 /* Data Row */
 .entry-row {
     display: grid;
