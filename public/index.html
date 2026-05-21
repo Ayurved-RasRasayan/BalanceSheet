@@ -420,8 +420,8 @@
         setTimeout(() => { dot.className = 'save-dot'; label.style.color = 'var(--text-muted)'; label.textContent = 'Auto-save active'; }, 3000);
     }
 
-    // ============================================================
-    // SYNCING LOGIC
+        // ============================================================
+    // SYNCING LOGIC (ROBUST VERSION)
     // ============================================================
     
     function showSyncStatus(active) {
@@ -431,37 +431,46 @@
 
     async function autoSyncOrders() {
         showSyncStatus(true);
+        console.log("Starting sync..."); // Debugging
         const freshOrders = await DB.find('orders');
+        console.log("Fetched Orders:", freshOrders); // Check console log to see data structure
+
+        // Robust Key Finding: Tries orderNo, then orderId, then MongoDB _id
+        const existingKeys = new Set(state.incomeData.map(e => e.orderNo || e.orderId || e._id));
         
-        // Check for new orders by Order No
-        const existingOrderNos = new Set(state.incomeData.filter(e => e.orderNo).map(e => e.orderNo));
-        const newOrders = freshOrders.filter(o => o.orderNo && !existingOrderNos.has(o.orderNo));
+        const newOrders = freshOrders.filter(o => {
+            const key = o.orderNo || o.orderId || o._id;
+            // We skip if we can't find a unique ID
+            if(!key) {
+                console.warn("Order missing ID:", o);
+                return false; 
+            }
+            return !existingKeys.has(key);
+        });
+
+        console.log("New Orders found:", newOrders.length);
 
         if (newOrders.length > 0) {
             state.orderData = freshOrders;
             
             for (const order of newOrders) {
-                // Extract detailed fields from order object
-                // Defaults provided if fields are missing in DB
-                const productName = order.product || order.name || 'General Item';
-                const orderId = order.orderNo || 'N/A';
+                // Flexible field mapping
+                const productName = order.product || order.name || order.item || 'General Item';
+                const orderId = order.orderNo || order.orderId || order._id;
                 const productId = order.productId || order.id || '';
                 const qty = order.qty || order.quantity || '';
                 const unit = order.unit || order.formFactor || '';
-                
-                // Combine Qty and Unit, e.g., "50" + "kg" = "50 kg"
                 const qtyDisplay = qty ? (unit ? `${qty} ${unit}` : `${qty}`) : '';
 
                 const newEntry = await DB.insertOne('income', {
                     date: order.date || todayStr(),
                     product: productName,
                     productId: productId,
-                    orderNo: orderId,
+                    orderNo: orderId, // Store the found ID
                     qtyUnit: qtyDisplay,
                     amount: order.amount || 0,
-                    // Legacy mapping
                     head: `${orderId} — ${productName}`,
-                    orderId: orderId 
+                    orderId: orderId
                 });
                 if (newEntry) state.incomeData.push(newEntry);
             }
@@ -475,6 +484,7 @@
             showToast(`Auto-synced ${newOrders.length} new order(s)`, 'success');
         } else {
             state.orderData = freshOrders;
+            console.log("No new orders to sync.");
         }
         showSyncStatus(false);
     }
