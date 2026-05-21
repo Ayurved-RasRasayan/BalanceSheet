@@ -234,7 +234,7 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
     /* INCOME TABLE – percentage widths */
     #incomeEntries .table-header,
     #incomeEntries .entry-row {
-        grid-template-columns: 12% 38% 25% 15% 10% !important;
+        grid-template-columns: 10% 30% 30% 25% 5% !important;
     }
 
     /* EXPENSE TABLE – percentage widths */
