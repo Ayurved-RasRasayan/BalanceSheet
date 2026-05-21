@@ -58,7 +58,7 @@
                     <span>Sync Orders</span>
                 </button>
 
-                <!-- Save Status -->
+                <!-- Save Status Indicator -->
                 <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs" style="background:var(--bg-card);border:1px solid var(--border);">
                     <div id="saveDot" class="save-dot saved"></div>
                     <span id="saveLabel" style="color:var(--text-muted)">All saved</span>
@@ -87,15 +87,28 @@
 
         <!-- Main Panel -->
         <div class="panel">
+            <!-- PANEL HEADER WITH ADD BUTTONS -->
             <div class="panel-header">
                 <h2 class="text-sm font-bold font-display" style="color:var(--text-primary)">ENTRIES</h2>
+                
+                <!-- RESTORED ADD BUTTONS -->
+                <div class="flex gap-2">
+                    <button onclick="addIncomeEntry()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition hover:brightness-110"
+                        style="background:var(--income-soft);color:var(--income);border:1px solid rgba(16,185,129,0.15);">
+                        <i class="fa-solid fa-plus text-[10px]"></i> Income
+                    </button>
+                    <button onclick="addExpenseEntry()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition hover:brightness-110"
+                        style="background:var(--expense-soft);color:var(--expense);border:1px solid rgba(244,63,94,0.15);">
+                        <i class="fa-solid fa-plus text-[10px]"></i> Expense
+                    </button>
+                </div>
             </div>
 
             <div class="flex main-split" style="min-height: 500px;">
                 
                 <!-- INCOME SIDE -->
                 <div class="split-col">
-                    <!-- The JS will inject the Table Header and Rows into this div -->
+                    <!-- The JS injects the Table Header and Rows here -->
                     <div id="incomeEntries"></div>
                     
                     <div class="px-5 py-3 items-center flex justify-between" style="border-top: 2px solid var(--border); background:rgba(16,185,129,0.03);">
@@ -107,7 +120,7 @@
                 <!-- EXPENSE SIDE -->
                 <div class="col-divider"></div>
                 <div class="split-col">
-                    <!-- The JS will inject the Table Header and Rows into this div -->
+                    <!-- The JS injects the Table Header and Rows here -->
                     <div id="expenseEntries"></div>
                     
                     <div class="px-5 py-3 items-center flex justify-between" style="border-top: 2px solid var(--border); background:rgba(244,63,94,0.03);">
