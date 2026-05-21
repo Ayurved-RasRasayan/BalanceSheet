@@ -32,13 +32,10 @@
             --text-muted: #4e5573;
             --income: #10b981;
             --income-soft: rgba(16,185,129,0.10);
-            --income-glow: rgba(16,185,129,0.25);
             --expense: #f43f5e;
             --expense-soft: rgba(244,63,94,0.10);
-            --expense-glow: rgba(244,63,94,0.25);
             --balance: #f59e0b;
             --balance-soft: rgba(245,158,11,0.10);
-            --balance-glow: rgba(245,158,11,0.25);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -49,168 +46,77 @@
             overflow-x: hidden;
         }
         h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
-
-        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
         .bg-grid {
-            background-image:
-                linear-gradient(rgba(31,36,55,0.25) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(31,36,55,0.25) 1px, transparent 1px);
+            background-image: linear-gradient(rgba(31,36,55,0.25) 1px, transparent 1px), linear-gradient(90deg, rgba(31,36,55,0.25) 1px, transparent 1px);
             background-size: 48px 48px;
         }
-        .bg-blob {
-            position: fixed; border-radius: 50%; filter: blur(120px);
-            pointer-events: none; z-index: 0;
-        }
+        .bg-blob { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
 
         .bs-input {
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            padding: 7px 10px;
-            border-radius: 6px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 13px;
-            width: 100%;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            background: var(--bg-input); border: 1px solid var(--border); color: var(--text-primary);
+            padding: 7px 10px; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+            width: 100%; transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .bs-input:focus {
-            outline: none;
-            border-color: var(--income);
-            box-shadow: 0 0 0 2px var(--income-soft);
-        }
-        .bs-input.expense-input:focus {
-            border-color: var(--expense);
-            box-shadow: 0 0 0 2px var(--expense-soft);
-        }
+        .bs-input:focus { outline: none; border-color: var(--income); box-shadow: 0 0 0 2px var(--income-soft); }
+        .bs-input.expense-input:focus { border-color: var(--expense); box-shadow: 0 0 0 2px var(--expense-soft); }
         .bs-input::placeholder { color: var(--text-muted); font-size: 12px; }
         .bs-input[type="number"] { text-align: right; font-variant-numeric: tabular-nums; }
         .bs-input[type="date"] { font-size: 12px; }
         .bs-input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.6); cursor: pointer; }
 
         .entry-row { animation: rowIn 0.35s cubic-bezier(0.16,1,0.3,1) forwards; }
-        @keyframes rowIn {
-            from { opacity: 0; transform: translateY(-8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes rowIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
         .entry-row.removing { animation: rowOut 0.25s ease forwards; }
-        @keyframes rowOut {
-            to { opacity: 0; transform: translateX(30px) scale(0.95); }
-        }
-        .delete-btn {
-            opacity: 0; transition: opacity 0.2s, transform 0.15s, color 0.15s;
-            cursor: pointer;
-        }
+        @keyframes rowOut { to { opacity: 0; transform: translateX(20px) scale(0.95); } }
+        
+        .delete-btn { opacity: 0; transition: opacity 0.2s, color 0.15s; cursor: pointer; }
         .entry-row:hover .delete-btn { opacity: 1; }
-        .delete-btn:hover { transform: scale(1.15); color: var(--expense); }
+        .delete-btn:hover { color: var(--expense) !important; }
 
         .summary-card {
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px 24px;
-            background: var(--bg-card);
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.3s;
+            border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px;
+            background: var(--bg-card); position: relative; overflow: hidden; transition: transform 0.2s;
         }
         .summary-card:hover { transform: translateY(-2px); }
-        .summary-card .accent-bar {
-            position: absolute; top: 0; left: 0; right: 0; height: 2px;
-        }
+        .summary-card .accent-bar { position: absolute; top: 0; left: 0; right: 0; height: 2px; }
 
-        .panel {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            overflow: hidden;
-        }
-        .panel-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between;
-        }
+        .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+        .panel-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
 
-        .toast-container {
-            position: fixed; bottom: 20px; right: 20px; z-index: 9999;
-            display: flex; flex-direction: column; gap: 8px; pointer-events: none;
-        }
-        .toast {
-            padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 500;
-            display: flex; align-items: center; gap: 8px;
-            transform: translateX(120%); opacity: 0;
-            transition: all 0.35s cubic-bezier(0.16,1,0.3,1);
-            pointer-events: auto; backdrop-filter: blur(12px);
-        }
+        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+        .toast { padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; transform: translateX(120%); opacity: 0; transition: all 0.35s cubic-bezier(0.16,1,0.3,1); pointer-events: auto; backdrop-filter: blur(12px); }
         .toast.show { transform: translateX(0); opacity: 1; }
         .toast.success { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.25); color: #34d399; }
         .toast.info { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.25); color: #60a5fa; }
         .toast.warning { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.25); color: #fbbf24; }
         .toast.error { background: rgba(244,63,94,0.15); border: 1px solid rgba(244,63,94,0.25); color: #fb7185; }
 
-        .save-dot {
-            width: 7px; height: 7px; border-radius: 50%;
-            background: var(--text-muted); transition: background 0.3s;
-        }
+        .save-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); transition: background 0.3s; }
         .save-dot.saving { background: var(--balance); animation: pulseDot 0.8s ease infinite; }
         .save-dot.saved { background: var(--income); }
-        .save-dot.error { background: var(--expense); }
         @keyframes pulseDot { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
 
-        .month-nav-btn {
-            width: 32px; height: 32px; border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            border: 1px solid var(--border); background: var(--bg-card);
-            color: var(--text-secondary); cursor: pointer; transition: all 0.2s;
-        }
-        .month-nav-btn:hover {
-            border-color: var(--border-light); color: var(--text-primary); background: var(--bg-primary);
-        }
+        .order-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--income-soft); color: var(--income); font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.5px; }
+        
+        .empty-state { padding: 30px 20px; text-align: center; color: var(--text-muted); }
 
-        .order-badge {
-            display: inline-flex; align-items: center; gap: 4px;
-            background: var(--income-soft); color: var(--income);
-            font-size: 10px; font-weight: 600; padding: 2px 7px;
-            border-radius: 4px; letter-spacing: 0.5px;
-        }
-
-        .empty-state { padding: 40px 20px; text-align: center; color: var(--text-muted); }
-
-        .loading-overlay {
-            position: fixed; inset: 0; background: var(--bg-deep);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 10000; transition: opacity 0.3s;
-        }
-        .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+        .split-col { flex: 1; min-width: 0; overflow: hidden; }
+        .col-divider { width: 1px; background: var(--border); flex-shrink: 0; }
 
         @media (max-width: 900px) {
-            .panels-grid { grid-template-columns: 1fr !important; }
             .summary-grid { grid-template-columns: 1fr !important; }
+            .main-split { flex-direction: column !important; }
+            .col-divider { width: 100% !important; height: 1px !important; }
             .delete-btn { opacity: 0.7; }
         }
-        @media (max-width: 500px) {
-            .entry-row { font-size: 12px; }
-            .bs-input { padding: 6px 8px; font-size: 12px; }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
-                animation-duration: 0.01ms !important;
-                transition-duration: 0.01ms !important;
-            }
-        }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
     </style>
 </head>
 <body class="bg-grid">
-
-    <!-- Initial Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="text-center">
-            <i class="fa-solid fa-spinner fa-spin text-2xl mb-3" style="color:var(--income)"></i>
-            <p class="text-sm" style="color:var(--text-secondary)">Connecting to database...</p>
-        </div>
-    </div>
 
     <!-- Background blobs -->
     <div class="bg-blob" style="width:500px;height:500px;background:var(--income);top:-100px;left:-100px;"></div>
@@ -228,26 +134,22 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-bold tracking-tight" style="color:var(--text-primary)">Balance Sheet</h1>
-                    <p class="text-xs" style="color:var(--text-muted)">Auto-saves to MongoDB</p>
+                    <p class="text-xs" style="color:var(--text-muted)">Auto-syncs & auto-saves to MongoDB</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-3 flex-wrap">
                 <!-- Month Navigator -->
                 <div class="flex items-center gap-1 px-2 py-1 rounded-lg" style="background:var(--bg-card);border:1px solid var(--border);">
-                    <button class="month-nav-btn" onclick="changeMonth(-1)" aria-label="Previous month">
-                        <i class="fa-solid fa-chevron-left text-xs"></i>
-                    </button>
+                    <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--bg-primary)] transition" onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left text-xs" style="color:var(--text-secondary)"></i></button>
                     <span id="monthLabel" class="px-3 text-sm font-medium font-display" style="color:var(--text-primary);min-width:120px;text-align:center;"></span>
-                    <button class="month-nav-btn" onclick="changeMonth(1)" aria-label="Next month">
-                        <i class="fa-solid fa-chevron-right text-xs"></i>
-                    </button>
+                    <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--bg-primary)] transition" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right text-xs" style="color:var(--text-secondary)"></i></button>
                 </div>
 
-                <!-- Sync Orders Button -->
+                <!-- Manual Sync Button -->
                 <button id="syncBtn" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all hover:brightness-110"
                     style="background:var(--income-soft);border:1px solid rgba(16,185,129,0.2);color:var(--income);"
-                    onclick="syncOrders()">
+                    onclick="manualSync()">
                     <i class="fa-solid fa-arrows-rotate text-xs"></i>
                     <span>Sync Orders</span>
                 </button>
@@ -261,105 +163,83 @@
         </header>
 
         <!-- Summary Cards -->
-        <div class="summary-grid grid grid-cols-3 gap-4 mb-8" style="grid-template-columns: repeat(3, 1fr);">
-            <div class="summary-card" id="incomeCard">
+        <div class="summary-grid grid grid-cols-3 gap-4 mb-8">
+            <div class="summary-card">
                 <div class="accent-bar" style="background:linear-gradient(90deg,var(--income),transparent)"></div>
                 <p class="text-xs font-medium mb-1" style="color:var(--text-muted)">TOTAL INCOME</p>
                 <p id="totalIncome" class="text-2xl font-bold font-display" style="color:var(--income)">$0.00</p>
-                <p id="incomeCount" class="text-xs mt-2" style="color:var(--text-muted)">0 entries</p>
             </div>
-            <div class="summary-card" id="expenseCard">
+            <div class="summary-card">
                 <div class="accent-bar" style="background:linear-gradient(90deg,var(--expense),transparent)"></div>
                 <p class="text-xs font-medium mb-1" style="color:var(--text-muted)">TOTAL EXPENSES</p>
                 <p id="totalExpense" class="text-2xl font-bold font-display" style="color:var(--expense)">$0.00</p>
-                <p id="expenseCount" class="text-xs mt-2" style="color:var(--text-muted)">0 entries</p>
             </div>
             <div class="summary-card" id="balanceCard">
                 <div class="accent-bar" style="background:linear-gradient(90deg,var(--balance),transparent)"></div>
                 <p class="text-xs font-medium mb-1" style="color:var(--text-muted)">NET BALANCE</p>
                 <p id="netBalance" class="text-2xl font-bold font-display" style="color:var(--balance)">$0.00</p>
-                <p id="balanceLabel" class="text-xs mt-2" style="color:var(--text-muted)">Income - Expenses</p>
             </div>
         </div>
 
-        <!-- Main Panels -->
-        <div class="panels-grid grid gap-6" style="grid-template-columns: 1fr 1fr;">
-
-            <!-- Income Panel -->
-            <div class="panel">
-                <div class="panel-header">
-                    <div class="flex items-center gap-2">
-                        <div class="w-2.5 h-2.5 rounded-full" style="background:var(--income)"></div>
-                        <h2 class="text-sm font-bold font-display tracking-wide" style="color:var(--text-primary)">INCOME</h2>
-                    </div>
-                    <button onclick="addIncomeEntry()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all hover:brightness-110"
+        <!-- UNIFIED SINGLE PANEL -->
+        <div class="panel">
+            <div class="panel-header flex-wrap gap-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-2.5 h-2.5 rounded-full" style="background:var(--income)"></div>
+                    <h2 class="text-sm font-bold font-display tracking-wide" style="color:var(--text-primary)">ENTRIES</h2>
+                    <div class="w-2.5 h-2.5 rounded-full ml-2" style="background:var(--expense)"></div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="addIncomeEntry()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition hover:brightness-110"
                         style="background:var(--income-soft);color:var(--income);border:1px solid rgba(16,185,129,0.15);">
-                        <i class="fa-solid fa-plus text-[10px]"></i> Add Entry
+                        <i class="fa-solid fa-plus text-[10px]"></i> Income
                     </button>
-                </div>
-
-                <div class="grid gap-2 px-5 py-2.5 text-[10px] font-semibold tracking-widest" style="grid-template-columns: 110px 1fr 120px 32px; color:var(--text-muted); border-bottom:1px solid var(--border); background:rgba(0,0,0,0.15);">
-                    <span>DATE</span>
-                    <span>HEAD / ORDER</span>
-                    <span class="text-right">AMOUNT</span>
-                    <span></span>
-                </div>
-
-                <div id="incomeEntries" class="divide-y" style="border-color:var(--border); max-height: 420px; overflow-y: auto;">
-                </div>
-
-                <div class="grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 110px 1fr 120px 32px; border-top: 2px solid var(--border); background:rgba(16,185,129,0.03);">
-                    <span></span>
-                    <span class="text-xs font-bold tracking-wider" style="color:var(--text-muted)">TOTAL</span>
-                    <span id="incomeTotalInline" class="text-sm font-bold font-display text-right" style="color:var(--income)">$0.00</span>
-                    <span></span>
-                </div>
-            </div>
-
-            <!-- Expense Panel -->
-            <div class="panel">
-                <div class="panel-header">
-                    <div class="flex items-center gap-2">
-                        <div class="w-2.5 h-2.5 rounded-full" style="background:var(--expense)"></div>
-                        <h2 class="text-sm font-bold font-display tracking-wide" style="color:var(--text-primary)">EXPENSES</h2>
-                    </div>
-                    <button onclick="addExpenseEntry()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all hover:brightness-110"
+                    <button onclick="addExpenseEntry()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition hover:brightness-110"
                         style="background:var(--expense-soft);color:var(--expense);border:1px solid rgba(244,63,94,0.15);">
-                        <i class="fa-solid fa-plus text-[10px]"></i> Add Entry
+                        <i class="fa-solid fa-plus text-[10px]"></i> Expense
                     </button>
                 </div>
+            </div>
 
-                <div class="grid gap-2 px-5 py-2.5 text-[10px] font-semibold tracking-widest" style="grid-template-columns: 110px 1fr 120px 32px; color:var(--text-muted); border-bottom:1px solid var(--border); background:rgba(0,0,0,0.15);">
-                    <span>DATE</span>
-                    <span>HEAD</span>
-                    <span class="text-right">AMOUNT</span>
-                    <span></span>
+            <!-- Split Layout: Income Left | Divider | Expense Right -->
+            <div class="flex main-split">
+                
+                <!-- INCOME SIDE -->
+                <div class="split-col">
+                    <!-- Header Row -->
+                    <div class="grid gap-2 px-5 py-2.5 text-[10px] font-semibold tracking-widest" style="grid-template-columns: 100px 1fr 100px 30px; color:var(--text-muted); border-bottom:1px solid var(--border); background:rgba(16,185,129,0.03);">
+                        <span>DATE</span><span>INCOME HEAD</span><span class="text-right">AMOUNT</span><span></span>
+                    </div>
+                    <div id="incomeEntries" style="max-height: 400px; overflow-y: auto;"></div>
+                    <div class="grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 100px 1fr 100px 30px; border-top: 2px solid var(--border); background:rgba(16,185,129,0.03);">
+                        <span></span>
+                        <span class="text-xs font-bold tracking-wider" style="color:var(--text-muted)">TOTAL</span>
+                        <span id="incomeTotalInline" class="text-sm font-bold font-display text-right" style="color:var(--income)">$0.00</span>
+                        <span></span>
+                    </div>
                 </div>
 
-                <div id="expenseEntries" class="divide-y" style="border-color:var(--border); max-height: 420px; overflow-y: auto;">
+                <!-- VERTICAL DIVIDER -->
+                <div class="col-divider"></div>
+
+                <!-- EXPENSE SIDE -->
+                <div class="split-col">
+                    <!-- Header Row -->
+                    <div class="grid gap-2 px-5 py-2.5 text-[10px] font-semibold tracking-widest" style="grid-template-columns: 100px 1fr 100px 30px; color:var(--text-muted); border-bottom:1px solid var(--border); background:rgba(244,63,94,0.03);">
+                        <span>DATE</span><span>EXPENSE HEAD</span><span class="text-right">AMOUNT</span><span></span>
+                    </div>
+                    <div id="expenseEntries" style="max-height: 400px; overflow-y: auto;"></div>
+                    <div class="grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 100px 1fr 100px 30px; border-top: 2px solid var(--border); background:rgba(244,63,94,0.03);">
+                        <span></span>
+                        <span class="text-xs font-bold tracking-wider" style="color:var(--text-muted)">TOTAL</span>
+                        <span id="expenseTotalInline" class="text-sm font-bold font-display text-right" style="color:var(--expense)">$0.00</span>
+                        <span></span>
+                    </div>
                 </div>
 
-                <div class="grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 110px 1fr 120px 32px; border-top: 2px solid var(--border); background:rgba(244,63,94,0.03);">
-                    <span></span>
-                    <span class="text-xs font-bold tracking-wider" style="color:var(--text-muted)">TOTAL</span>
-                    <span id="expenseTotalInline" class="text-sm font-bold font-display text-right" style="color:var(--expense)">$0.00</span>
-                    <span></span>
-                </div>
             </div>
         </div>
 
-        <!-- MongoDB Info Banner -->
-        <div class="mt-6 p-4 rounded-xl flex items-start gap-3" style="background:var(--bg-card);border:1px solid var(--border);">
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:rgba(78,85,115,0.2);">
-                <i class="fa-solid fa-database text-xs" style="color:var(--text-muted)"></i>
-            </div>
-            <div>
-                <p class="text-xs font-semibold mb-0.5" style="color:var(--text-secondary)">Connected to MongoDB Atlas</p>
-                <p class="text-[11px] leading-relaxed" style="color:var(--text-muted)">
-                    Data is persisted in your cloud database. All changes are auto-saved via the Node.js API.
-                </p>
-            </div>
-        </div>
     </div>
 
     <!-- Toast container -->
@@ -367,21 +247,19 @@
 
     <script>
     // ============================================================
-    // DATABASE SERVICE — Real MongoDB API Layer via Node.js
+    // DATABASE SERVICE — Real MongoDB API Layer
     // ============================================================
     const DB = {
         async find(collection) {
             try {
                 const res = await fetch(`/api/${collection}`);
-                if (!res.ok) throw new Error(`Failed to fetch ${collection}`);
+                if (!res.ok) throw new Error('Fetch failed');
                 return await res.json();
             } catch (err) {
                 console.error(`DB.find error [${collection}]:`, err);
-                showToast(`Error loading ${collection}`, 'error');
                 return [];
             }
         },
-
         async saveAll(collection, docs) {
             try {
                 const res = await fetch(`/api/${collection}/sync`, {
@@ -389,15 +267,12 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(docs)
                 });
-                if (!res.ok) throw new Error(`Failed to save ${collection}`);
-                return true;
+                return res.ok;
             } catch (err) {
                 console.error(`DB.saveAll error [${collection}]:`, err);
-                showToast(`Error saving ${collection}`, 'error');
                 return false;
             }
         },
-
         async insertOne(collection, doc) {
             try {
                 const res = await fetch(`/api/${collection}`, {
@@ -405,25 +280,19 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(doc)
                 });
-                if (!res.ok) throw new Error(`Failed to insert into ${collection}`);
+                if (!res.ok) throw new Error('Insert failed');
                 return await res.json();
             } catch (err) {
                 console.error(`DB.insertOne error [${collection}]:`, err);
-                showToast(`Error adding entry`, 'error');
                 return null;
             }
         },
-
         async deleteOne(collection, id) {
             try {
-                const res = await fetch(`/api/${collection}/${id}`, { 
-                    method: 'DELETE' 
-                });
-                if (!res.ok) throw new Error(`Failed to delete from ${collection}`);
-                return true;
+                const res = await fetch(`/api/${collection}/${id}`, { method: 'DELETE' });
+                return res.ok;
             } catch (err) {
                 console.error(`DB.deleteOne error [${collection}]:`, err);
-                showToast(`Error deleting entry`, 'error');
                 return false;
             }
         }
@@ -434,10 +303,8 @@
     // ============================================================
     const state = {
         currentYear: new Date().getFullYear(),
-        currentMonth: new Date().getMonth(), // 0-indexed
+        currentMonth: new Date().getMonth(),
         saveTimeout: null,
-        isSaving: false,
-        // Client-side cache of database records
         incomeData: [],
         expenseData: [],
         orderData: []
@@ -447,28 +314,21 @@
     // UTILITY FUNCTIONS
     // ============================================================
     function formatCurrency(amount) {
-        const num = parseFloat(amount) || 0;
-        return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return '$' + (parseFloat(amount) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
-
     function getMonthLabel() {
-        const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-        return `${months[state.currentMonth]} ${state.currentYear}`;
+        const m = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        return `${m[state.currentMonth]} ${state.currentYear}`;
     }
-
     function isDateInMonth(dateStr) {
         if (!dateStr) return false;
         const d = new Date(dateStr);
-        // Handle invalid dates
-        if (isNaN(d.getTime())) return false;
-        return d.getFullYear() === state.currentYear && d.getMonth() === state.currentMonth;
+        return !isNaN(d.getTime()) && d.getFullYear() === state.currentYear && d.getMonth() === state.currentMonth;
     }
-
     function todayStr() {
         const d = new Date();
         return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     }
-
     function escapeHtml(str) {
         const div = document.createElement('div');
         div.textContent = str;
@@ -484,15 +344,11 @@
         dot.className = 'save-dot saving';
         label.textContent = 'Saving...';
         label.style.color = 'var(--balance)';
-
         clearTimeout(state.saveTimeout);
-        state.saveTimeout = setTimeout(() => {
-            performSave();
-        }, 600);
+        state.saveTimeout = setTimeout(performSave, 600);
     }
 
     async function performSave() {
-        // Collect current income entries from DOM
         const incomeRows = document.querySelectorAll('#incomeEntries .entry-row');
         const incomes = [];
         incomeRows.forEach(row => {
@@ -501,17 +357,11 @@
             const headInput = row.querySelector('[data-field="head"]');
             const amountInput = row.querySelector('[data-field="amount"]');
             const orderId = row.dataset.orderId || '';
-
-            incomes.push({
-                _id: id,
-                date: dateInput ? dateInput.value : '',
-                head: headInput ? headInput.value : '',
-                amount: parseFloat(amountInput ? amountInput.value : 0) || 0,
-                orderId: orderId,
-            });
+            if (id && dateInput && headInput && amountInput) {
+                incomes.push({ _id: id, date: dateInput.value, head: headInput.value, amount: parseFloat(amountInput.value) || 0, orderId });
+            }
         });
 
-        // Collect current expense entries from DOM
         const expenseRows = document.querySelectorAll('#expenseEntries .entry-row');
         const expenses = [];
         expenseRows.forEach(row => {
@@ -519,142 +369,101 @@
             const dateInput = row.querySelector('[data-field="date"]');
             const headInput = row.querySelector('[data-field="head"]');
             const amountInput = row.querySelector('[data-field="amount"]');
-
-            expenses.push({
-                _id: id,
-                date: dateInput ? dateInput.value : '',
-                head: headInput ? headInput.value : '',
-                amount: parseFloat(amountInput ? amountInput.value : 0) || 0,
-            });
+            if (id && dateInput && headInput && amountInput) {
+                expenses.push({ _id: id, date: dateInput.value, head: headInput.value, amount: parseFloat(amountInput.value) || 0 });
+            }
         });
 
-        // Save to MongoDB via API
-        const incomeSuccess = await DB.saveAll('income', incomes);
-        const expenseSuccess = await DB.saveAll('expenses', expenses);
+        const incSuccess = await DB.saveAll('income', incomes);
+        const expSuccess = await DB.saveAll('expenses', expenses);
 
         const dot = document.getElementById('saveDot');
         const label = document.getElementById('saveLabel');
-
-        if (incomeSuccess && expenseSuccess) {
+        if (incSuccess && expSuccess) {
             dot.className = 'save-dot saved';
             label.textContent = 'All saved';
             label.style.color = 'var(--income)';
         } else {
-            dot.className = 'save-dot error';
+            dot.className = 'save-dot';
             label.textContent = 'Save failed';
             label.style.color = 'var(--expense)';
         }
+        setTimeout(() => { dot.className = 'save-dot'; label.style.color = 'var(--text-muted)'; label.textContent = 'Auto-save active'; }, 3000);
+    }
 
-        // Reset indicator after 3 seconds
-        setTimeout(() => {
-            dot.className = 'save-dot';
-            label.style.color = 'var(--text-muted)';
-            label.textContent = 'Auto-save active';
-        }, 3000);
+    // ============================================================
+    // SYNCING LOGIC
+    // ============================================================
+    async function autoSyncOrders() {
+        state.orderData = await DB.find('orders');
+        const existingOrderIds = new Set(state.incomeData.filter(e => e.orderId).map(e => e.orderId));
+        const newOrders = state.orderData.filter(o => !existingOrderIds.has(o.orderNo));
+
+        if (newOrders.length > 0) {
+            for (const order of newOrders) {
+                const newEntry = await DB.insertOne('income', {
+                    date: order.date,
+                    head: `${order.orderNo} — ${order.customer || ''}`,
+                    amount: order.amount,
+                    orderId: order.orderNo
+                });
+                if (newEntry) state.incomeData.push(newEntry);
+            }
+            showToast(`Auto-synced ${newOrders.length} new order(s)`, 'success');
+            renderIncomeEntries();
+            updateSummary();
+        }
+    }
+
+    async function manualSync() {
+        const btn = document.getElementById('syncBtn');
+        btn.style.pointerEvents = 'none';
+        const icon = btn.querySelector('i');
+        icon.style.animation = 'spin 0.6s linear';
+        
+        await autoSyncOrders();
+        showToast('Manual sync complete', 'info');
+        
+        icon.style.animation = '';
+        btn.style.pointerEvents = '';
     }
 
     // ============================================================
     // DATA OPERATIONS
     // ============================================================
-    async function syncOrders() {
-        const btn = document.getElementById('syncBtn');
-        btn.style.pointerEvents = 'none';
-        const icon = btn.querySelector('i');
-        icon.style.animation = 'spin 0.6s linear';
-
-        try {
-            // Fetch latest orders from DB
-            state.orderData = await DB.find('orders');
-            const existingOrderIds = new Set(state.incomeData.filter(e => e.orderId).map(e => e.orderId));
-            
-            // Find orders not yet in income
-            const newOrders = state.orderData.filter(o => !existingOrderIds.has(o.orderNo));
-
-            if (newOrders.length === 0) {
-                showToast('All orders are already synced', 'info');
-            } else {
-                // Add new orders as income entries in DB
-                for (const order of newOrders) {
-                    const newEntry = await DB.insertOne('income', {
-                        date: order.date,
-                        head: `${order.orderNo} — ${order.customer || ''}`,
-                        amount: order.amount,
-                        orderId: order.orderNo
-                    });
-                    if (newEntry) state.incomeData.push(newEntry);
-                }
-                showToast(`${newOrders.length} order(s) synced to income`, 'success');
-                renderIncomeEntries();
-                updateSummary();
-            }
-        } catch (err) {
-            showToast('Error syncing orders', 'error');
-        }
-
-        icon.style.animation = '';
-        btn.style.pointerEvents = '';
-    }
-
     async function addIncomeEntry() {
-        const newEntry = await DB.insertOne('income', {
-            date: todayStr(),
-            head: '',
-            amount: 0,
-            orderId: ''
-        });
-        
+        const newEntry = await DB.insertOne('income', { date: todayStr(), head: '', amount: 0, orderId: '' });
         if (newEntry) {
             state.incomeData.push(newEntry);
             renderIncomeEntries();
             updateSummary();
-
-            // Focus the new row
-            setTimeout(() => {
-                const row = document.querySelector(`[data-entry-id="${newEntry._id}"]`);
-                if (row) {
-                    const headInput = row.querySelector('[data-field="head"]');
-                    if (headInput) headInput.focus();
-                }
-            }, 50);
+            setTimeout(() => { const row = document.querySelector(`#incomeEntries [data-entry-id="${newEntry._id}"] input[data-field="head"]`); if(row) row.focus(); }, 50);
         }
     }
 
     async function addExpenseEntry() {
-        const newEntry = await DB.insertOne('expenses', {
-            date: todayStr(),
-            head: '',
-            amount: 0
-        });
-        
+        const newEntry = await DB.insertOne('expenses', { date: todayStr(), head: '', amount: 0 });
         if (newEntry) {
             state.expenseData.push(newEntry);
             renderExpenseEntries();
             updateSummary();
-
-            setTimeout(() => {
-                const row = document.querySelector(`[data-entry-id="${newEntry._id}"]`);
-                if (row) {
-                    const headInput = row.querySelector('[data-field="head"]');
-                    if (headInput) headInput.focus();
-                }
-            }, 50);
+            setTimeout(() => { const row = document.querySelector(`#expenseEntries [data-entry-id="${newEntry._id}"] input[data-field="head"]`); if(row) row.focus(); }, 50);
         }
     }
 
     async function deleteEntry(type, id) {
-        const row = document.querySelector(`[data-entry-id="${id}"]`);
+        const containerId = type === 'income' ? 'incomeEntries' : 'expenseEntries';
+        const row = document.querySelector(`#${containerId} [data-entry-id="${id}"]`);
         if (row) {
             row.classList.add('removing');
             setTimeout(async () => {
                 const success = await DB.deleteOne(type === 'income' ? 'income' : 'expenses', id);
                 if (success) {
-                    if (type === 'income') {
-                        state.incomeData = state.incomeData.filter(e => e._id !== id);
-                        renderIncomeEntries();
-                    } else {
-                        state.expenseData = state.expenseData.filter(e => e._id !== id);
-                        renderExpenseEntries();
-                    }
+                    if (type === 'income') state.incomeData = state.incomeData.filter(e => e._id !== id);
+                    else state.expenseData = state.expenseData.filter(e => e._id !== id);
+                    
+                    if (type === 'income') renderIncomeEntries();
+                    else renderExpenseEntries();
                     updateSummary();
                     showToast('Entry deleted', 'warning');
                 }
@@ -665,37 +474,24 @@
     // ============================================================
     // UI RENDERING
     // ============================================================
-    function renderMonthLabel() {
-        document.getElementById('monthLabel').textContent = getMonthLabel();
-    }
+    function renderMonthLabel() { document.getElementById('monthLabel').textContent = getMonthLabel(); }
 
     function renderIncomeEntries() {
         const container = document.getElementById('incomeEntries');
-        // Filter cached data by current selected month
         const entries = state.incomeData.filter(e => isDateInMonth(e.date));
-
         if (entries.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fa-solid fa-inbox text-2xl mb-2" style="color:var(--border-light)"></i>
-                    <p class="text-xs" style="color:var(--text-muted)">No income entries this month</p>
-                    <p class="text-[10px] mt-1" style="color:var(--text-muted)">Add entries manually or sync orders</p>
-                </div>
-            `;
+            container.innerHTML = `<div class="empty-state py-8"><p class="text-xs" style="color:var(--text-muted)">No income this month</p></div>`;
             return;
         }
-
         container.innerHTML = entries.map(entry => `
-            <div class="entry-row grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 110px 1fr 120px 32px; border-bottom: 1px solid var(--border);" data-entry-id="${entry._id}" data-order-id="${entry.orderId || ''}">
+            <div class="entry-row grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 100px 1fr 100px 30px; border-bottom: 1px solid var(--border);" data-entry-id="${entry._id}" data-order-id="${entry.orderId || ''}">
                 <input type="date" class="bs-input" data-field="date" value="${entry.date ? entry.date.split('T')[0] : ''}" aria-label="Date">
                 <div class="flex items-center gap-2">
                     ${entry.orderId ? '<span class="order-badge">ORD</span>' : ''}
                     <input type="text" class="bs-input" data-field="head" value="${escapeHtml(entry.head || '')}" placeholder="Income head..." aria-label="Head">
                 </div>
                 <input type="number" class="bs-input" data-field="amount" value="${entry.amount || ''}" placeholder="0.00" step="0.01" min="0" aria-label="Amount">
-                <button class="delete-btn text-sm" style="color:var(--text-muted)" onclick="deleteEntry('income','${entry._id}')" aria-label="Delete entry">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+                <button class="delete-btn text-sm" style="color:var(--text-muted)" onclick="deleteEntry('income','${entry._id}')" aria-label="Delete"><i class="fa-solid fa-xmark"></i></button>
             </div>
         `).join('');
     }
@@ -703,208 +499,108 @@
     function renderExpenseEntries() {
         const container = document.getElementById('expenseEntries');
         const entries = state.expenseData.filter(e => isDateInMonth(e.date));
-
         if (entries.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fa-solid fa-inbox text-2xl mb-2" style="color:var(--border-light)"></i>
-                    <p class="text-xs" style="color:var(--text-muted)">No expense entries this month</p>
-                    <p class="text-[10px] mt-1" style="color:var(--text-muted)">Click "Add Entry" to record expenses</p>
-                </div>
-            `;
+            container.innerHTML = `<div class="empty-state py-8"><p class="text-xs" style="color:var(--text-muted)">No expenses this month</p></div>`;
             return;
         }
-
         container.innerHTML = entries.map(entry => `
-            <div class="entry-row grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 110px 1fr 120px 32px; border-bottom: 1px solid var(--border);" data-entry-id="${entry._id}">
+            <div class="entry-row grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 100px 1fr 100px 30px; border-bottom: 1px solid var(--border);" data-entry-id="${entry._id}">
                 <input type="date" class="bs-input expense-input" data-field="date" value="${entry.date ? entry.date.split('T')[0] : ''}" aria-label="Date">
                 <input type="text" class="bs-input expense-input" data-field="head" value="${escapeHtml(entry.head || '')}" placeholder="Expense head..." aria-label="Head">
                 <input type="number" class="bs-input expense-input" data-field="amount" value="${entry.amount || ''}" placeholder="0.00" step="0.01" min="0" aria-label="Amount">
-                <button class="delete-btn text-sm" style="color:var(--text-muted)" onclick="deleteEntry('expense','${entry._id}')" aria-label="Delete entry">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+                <button class="delete-btn text-sm" style="color:var(--text-muted)" onclick="deleteEntry('expense','${entry._id}')" aria-label="Delete"><i class="fa-solid fa-xmark"></i></button>
             </div>
         `).join('');
     }
 
     function updateSummary() {
-        let totalIncome = 0, totalExpense = 0, incomeCount = 0, expenseCount = 0;
-
-        // Read directly from DOM inputs for instant feedback while typing
+        let totalIncome = 0, totalExpense = 0;
         document.querySelectorAll('#incomeEntries .entry-row').forEach(row => {
-            const amountInput = row.querySelector('[data-field="amount"]');
-            const val = parseFloat(amountInput ? amountInput.value : 0) || 0;
-            totalIncome += val;
-            incomeCount++;
+            totalIncome += parseFloat(row.querySelector('[data-field="amount"]')?.value || 0) || 0;
         });
-
         document.querySelectorAll('#expenseEntries .entry-row').forEach(row => {
-            const amountInput = row.querySelector('[data-field="amount"]');
-            const val = parseFloat(amountInput ? amountInput.value : 0) || 0;
-            totalExpense += val;
-            expenseCount++;
+            totalExpense += parseFloat(row.querySelector('[data-field="amount"]')?.value || 0) || 0;
         });
 
         const net = totalIncome - totalExpense;
-
         document.getElementById('totalIncome').textContent = formatCurrency(totalIncome);
         document.getElementById('totalExpense').textContent = formatCurrency(totalExpense);
         document.getElementById('netBalance').textContent = formatCurrency(net);
-        document.getElementById('incomeCount').textContent = `${incomeCount} entr${incomeCount === 1 ? 'y' : 'ies'}`;
-        document.getElementById('expenseCount').textContent = `${expenseCount} entr${expenseCount === 1 ? 'y' : 'ies'}`;
         document.getElementById('incomeTotalInline').textContent = formatCurrency(totalIncome);
         document.getElementById('expenseTotalInline').textContent = formatCurrency(totalExpense);
 
-        // Dynamic balance color based on surplus/deficit
         const balanceEl = document.getElementById('netBalance');
-        const balanceCard = document.getElementById('balanceCard');
-        const accentBar = balanceCard.querySelector('.accent-bar');
-
+        const accentBar = document.querySelector('#balanceCard .accent-bar');
         if (net >= 0) {
             balanceEl.style.color = 'var(--income)';
             accentBar.style.background = 'linear-gradient(90deg,var(--income),transparent)';
-            document.getElementById('balanceLabel').textContent = 'Surplus';
-            document.getElementById('balanceLabel').style.color = 'var(--income)';
         } else {
             balanceEl.style.color = 'var(--expense)';
             accentBar.style.background = 'linear-gradient(90deg,var(--expense),transparent)';
-            document.getElementById('balanceLabel').textContent = 'Deficit';
-            document.getElementById('balanceLabel').style.color = 'var(--expense)';
         }
     }
 
     // ============================================================
-    // TOAST NOTIFICATIONS
+    // TOAST & NAVIGATION
     // ============================================================
     function showToast(message, type = 'info') {
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-
-        const iconMap = {
-            success: 'fa-check-circle',
-            info: 'fa-info-circle',
-            warning: 'fa-exclamation-triangle',
-            error: 'fa-times-circle'
-        };
-
-        toast.innerHTML = `<i class="fa-solid ${iconMap[type] || iconMap.info}"></i><span>${message}</span>`;
+        const icons = { success: 'fa-check-circle', info: 'fa-info-circle', warning: 'fa-exclamation-triangle', error: 'fa-times-circle' };
+        toast.innerHTML = `<i class="fa-solid ${icons[type]}"></i><span>${message}</span>`;
         container.appendChild(toast);
-
-        requestAnimationFrame(() => { toast.classList.add('show'); });
-
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 350);
-        }, 3000);
+        requestAnimationFrame(() => toast.classList.add('show'));
+        setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 350); }, 3000);
     }
 
-    // ============================================================
-    // MONTH NAVIGATION
-    // ============================================================
     function changeMonth(delta) {
         state.currentMonth += delta;
-        if (state.currentMonth > 11) {
-            state.currentMonth = 0;
-            state.currentYear++;
-        } else if (state.currentMonth < 0) {
-            state.currentMonth = 11;
-            state.currentYear--;
-        }
-        renderMonthLabel();
-        renderIncomeEntries();
-        renderExpenseEntries();
-        updateSummary();
+        if (state.currentMonth > 11) { state.currentMonth = 0; state.currentYear++; }
+        else if (state.currentMonth < 0) { state.currentMonth = 11; state.currentYear--; }
+        renderMonthLabel(); renderIncomeEntries(); renderExpenseEntries(); updateSummary();
     }
 
     // ============================================================
-    // EVENT HANDLING
+    // EVENT HANDLING & INIT
     // ============================================================
     function setupEventDelegation() {
-        // Income entries — delegate input events
-        document.getElementById('incomeEntries').addEventListener('input', (e) => {
-            const field = e.target.dataset.field;
-            if (!field) return;
-            updateSummary();
-            debounceSave();
-        });
-
-        // Expense entries — delegate input events
-        document.getElementById('expenseEntries').addEventListener('input', (e) => {
-            const field = e.target.dataset.field;
-            if (!field) return;
-            updateSummary();
-            debounceSave();
-        });
-
-        // Keyboard navigation — Enter to move to next input
-        document.getElementById('incomeEntries').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const inputs = Array.from(document.querySelectorAll('#incomeEntries .bs-input'));
-                const idx = inputs.indexOf(e.target);
-                if (idx < inputs.length - 1) inputs[idx + 1].focus();
-            }
-        });
-
-        document.getElementById('expenseEntries').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const inputs = Array.from(document.querySelectorAll('#expenseEntries .bs-input'));
-                const idx = inputs.indexOf(e.target);
-                if (idx < inputs.length - 1) inputs[idx + 1].focus();
-            }
-        });
+        document.getElementById('incomeEntries').addEventListener('input', () => { updateSummary(); debounceSave(); });
+        document.getElementById('expenseEntries').addEventListener('input', () => { updateSummary(); debounceSave(); });
     }
 
-    // Add dynamic keyframes for spinner
     function addDynamicStyles() {
         const style = document.createElement('style');
         style.textContent = `@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
         document.head.appendChild(style);
     }
 
-    // ============================================================
-    // INITIALIZATION
-    // ============================================================
     async function init() {
         addDynamicStyles();
         renderMonthLabel();
 
         try {
-            // Seed sample orders if database is empty
+            // Seed orders if empty
             await fetch('/api/seed/orders');
 
-            // Load initial data from MongoDB via API
-            state.orderData = await DB.find('orders');
+            // Load data
             state.incomeData = await DB.find('income');
             state.expenseData = await DB.find('expenses');
+
+            // AUTO-SYNC ON LOAD
+            await autoSyncOrders();
 
             renderIncomeEntries();
             renderExpenseEntries();
             updateSummary();
             setupEventDelegation();
-
-            // Hide loading overlay
-            const overlay = document.getElementById('loadingOverlay');
-            overlay.classList.add('hidden');
-            setTimeout(() => overlay.remove(), 300);
-
-            showToast('Balance sheet loaded from database', 'success');
+            showToast('Balance sheet loaded', 'success');
         } catch (err) {
             console.error('Initialization error:', err);
-            const overlay = document.getElementById('loadingOverlay');
-            overlay.innerHTML = `
-                <div class="text-center">
-                    <i class="fa-solid fa-triangle-exclamation text-2xl mb-3" style="color:var(--expense)"></i>
-                    <p class="text-sm" style="color:var(--text-secondary)">Failed to connect to database</p>
-                    <p class="text-xs mt-1" style="color:var(--text-muted)">Check your server and MongoDB connection</p>
-                </div>
-            `;
+            showToast('Failed to connect to database', 'error');
         }
     }
 
-    // Start the application
     init();
     </script>
 </body>
