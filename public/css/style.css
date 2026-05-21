@@ -253,7 +253,7 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
     /* EXPENSE TABLE – percentage widths */
     #expenseEntries .table-header,
     #expenseEntries .entry-row {
-        grid-template-columns: 25% 68% 12% 15% !important;
+        grid-template-columns: 25% 68% 12% 25% !important;
     }
 
     .table-header {
