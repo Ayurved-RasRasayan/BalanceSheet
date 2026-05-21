@@ -185,6 +185,7 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
 }
 
 /* ========== PRINT STYLES – PERCENTAGE COLUMNS ========== */
+/* ========== PRINT STYLES – PERCENTAGE COLUMNS ========== */
 @media print {
     @page {
         size: landscape;
@@ -199,7 +200,6 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
     /* Hide non-essential UI */
     header > div:last-child,
     .panel-header button,
-    .delete-btn,
     .toast-container,
     .save-dot,
     #saveLabel {
