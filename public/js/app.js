@@ -59,7 +59,10 @@ const state = {
     saveTimeout: null,
     incomeData: [],
     expenseData: [],
-    orderData: []
+    orderData: [],
+    // NEW: Sorting State
+    incomeSort: 'desc', // 'desc' = Newest first, 'asc' = Oldest first
+    expenseSort: 'desc'
 };
 
 // Variable to hold the Auto-Sync Timer
@@ -89,6 +92,20 @@ function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+// ============================================================
+// SORTING LOGIC
+// ============================================================
+function toggleSort(type) {
+    if (type === 'income') {
+        // Toggle between asc and desc
+        state.incomeSort = state.incomeSort === 'asc' ? 'desc' : 'asc';
+        renderIncomeEntries();
+    } else {
+        state.expenseSort = state.expenseSort === 'asc' ? 'desc' : 'asc';
+        renderExpenseEntries();
+    }
 }
 
 // ============================================================
@@ -158,17 +175,11 @@ async function manualSync() {
 // ============================================================
 function toggleAutoSync(isEnabled) {
     if (isEnabled) {
-        // Clear any existing interval to prevent duplicates
         if (autoSyncInterval) clearInterval(autoSyncInterval);
-
-        // Sync immediately when turned on
         autoSyncOrders();
-
-        // Start the 5 minute (300,000 ms) timer
         autoSyncInterval = setInterval(autoSyncOrders, 300000);
         showToast('Auto-sync enabled (Every 5 min)', 'success');
     } else {
-        // Stop the timer
         if (autoSyncInterval) {
             clearInterval(autoSyncInterval);
             autoSyncInterval = null;
@@ -178,13 +189,27 @@ function toggleAutoSync(isEnabled) {
 }
 
 // ============================================================
-// RENDERING (TABLE VIEW)
+// RENDERING (TABLE VIEW) WITH SORTING
 // ============================================================
 function renderMonthLabel() { document.getElementById('monthLabel').textContent = getMonthLabel(); }
 
 function renderIncomeEntries() {
     const container = document.getElementById('incomeEntries');
-    const entries = state.incomeData.filter(e => isDateInMonth(e.date));
+    
+    // 1. Filter by month
+    let entries = state.incomeData.filter(e => isDateInMonth(e.date));
+
+    // 2. Sort by Date
+    const sortDir = state.incomeSort === 'asc' ? 1 : -1;
+    entries.sort((a, b) => {
+        // Handle empty dates by pushing them to the end
+        if (!a.date) return 1; 
+        if (!b.date) return -1;
+        return (new Date(a.date) - new Date(b.date)) * sortDir;
+    });
+
+    // 3. Determine Icon
+    const sortIcon = state.incomeSort === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
 
     if (entries.length === 0) {
         container.innerHTML = `<div class="empty-state py-10" style="text-align:center; color:var(--text-muted);">No income this month. Click Add Income or Sync.</div>`;
@@ -193,7 +218,10 @@ function renderIncomeEntries() {
 
     let html = `
     <div class="table-header">
-        <span>Date</span>
+        <!-- Clickable Date Header -->
+        <span onclick="toggleSort('income')" style="cursor:pointer; user-select: none;">
+            Date <i class="fa-solid ${sortIcon}" style="font-size: 10px; opacity: 0.7;"></i>
+        </span>
         <span>Product Name</span>
         <span>Details (Form / Qty)</span>
         <span style="text-align:right;">Amount</span>
@@ -226,21 +254,32 @@ function renderIncomeEntries() {
 
 function renderExpenseEntries() {
     const container = document.getElementById('expenseEntries');
-    const entries = state.expenseData.filter(e => isDateInMonth(e.date));
     
+    // 1. Filter by month
+    let entries = state.expenseData.filter(e => isDateInMonth(e.date));
+
+    // 2. Sort by Date
+    const sortDir = state.expenseSort === 'asc' ? 1 : -1;
+    entries.sort((a, b) => {
+        if (!a.date) return 1; 
+        if (!b.date) return -1;
+        return (new Date(a.date) - new Date(b.date)) * sortDir;
+    });
+
+    // 3. Determine Icon
+    const sortIcon = state.expenseSort === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
+
     if (entries.length === 0) {
         container.innerHTML = `<div class="empty-state py-8" style="text-align:center; color:var(--text-muted)">No expenses this month</div>`;
         return;
     }
     
-    // UPDATED: Added inline style to define 4 specific columns
-    // 110px = Date Width
-    // 1fr   = Expense Head Width (Takes all remaining space -> WIDER)
-    // 120px = Amount Width
-    // 30px  = Action Button Width
     let html = `
     <div class="table-header" style="grid-template-columns: 110px 1fr 120px 30px;">
-        <span>Date</span>
+        <!-- Clickable Date Header -->
+        <span onclick="toggleSort('expense')" style="cursor:pointer; user-select: none;">
+            Date <i class="fa-solid ${sortIcon}" style="font-size: 10px; opacity: 0.7;"></i>
+        </span>
         <span>Expense Head</span>
         <span style="text-align:right;">Amount</span>
         <span></span>
@@ -248,7 +287,6 @@ function renderExpenseEntries() {
     <div class="table-view-container">`;
 
     html += entries.map(entry => `
-        <!-- UPDATED: Added inline style to rows as well -->
         <div class="entry-row" style="grid-template-columns: 110px 1fr 120px 30px;" data-entry-id="${entry._id}">
             <input type="date" class="bs-input-plain" data-field="date" value="${entry.date ? entry.date.split('T')[0] : ''}">
             <input type="text" class="bs-input-plain" data-field="head" value="${escapeHtml(entry.head || '')}" placeholder="Head...">
@@ -262,6 +300,7 @@ function renderExpenseEntries() {
     html += `</div>`;
     container.innerHTML = html;
 }
+
 // ============================================================
 // ACTIONS & SAVE
 // ============================================================
