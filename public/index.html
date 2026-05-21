@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Balance Sheet Manager (Block View)</title>
+    <title>Balance Sheet (Synced)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -26,7 +26,6 @@
             --bg-card: #121622;
             --bg-input: #0a0d15;
             --border: #1f2437;
-            --border-light: #2a3050;
             --text-primary: #e4e7f0;
             --text-secondary: #8890ab;
             --text-muted: #4e5573;
@@ -35,49 +34,29 @@
             --expense: #f43f5e;
             --expense-soft: rgba(244,63,94,0.10);
             --balance: #f59e0b;
-            --balance-soft: rgba(245,158,11,0.10);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg-deep);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg-deep); color: var(--text-primary); min-height: 100vh; }
         h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-        .bg-grid {
-            background-image: linear-gradient(rgba(31,36,55,0.25) 1px, transparent 1px), linear-gradient(90deg, rgba(31,36,55,0.25) 1px, transparent 1px);
-            background-size: 48px 48px;
-        }
-        .bg-blob { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
-
-        /* Standard Input Styling */
+        
+        /* Inputs */
         .bs-input {
             background: var(--bg-input); border: 1px solid var(--border); color: var(--text-primary);
-            padding: 6px 10px; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 13px;
-            width: 100%; transition: border-color 0.2s, box-shadow 0.2s;
+            padding: 8px 12px; border-radius: 6px; font-family: inherit; font-size: 13px; width: 100%;
         }
-        .bs-input:focus { outline: none; border-color: var(--income); box-shadow: 0 0 0 2px var(--income-soft); }
-        .bs-input.expense-input:focus { border-color: var(--expense); box-shadow: 0 0 0 2px var(--expense-soft); }
-        .bs-input::placeholder { color: var(--text-muted); font-size: 12px; }
-        .bs-input[type="number"] { text-align: right; font-variant-numeric: tabular-nums; }
-        .bs-input[type="date"] { font-size: 12px; }
-
-        /* Block View Specific Styles */
+        .bs-input:focus { outline: none; border-color: var(--income); }
+        
+        /* Block Grid */
         .income-grid-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 16px;
             max-height: 600px;
             overflow-y: auto;
             padding: 16px;
         }
 
+        /* The Block Design */
         .income-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
@@ -85,87 +64,70 @@
             padding: 16px;
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
             gap: 12px;
             position: relative;
-            transition: border-color 0.2s, transform 0.2s;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s;
         }
-        .income-card:hover { border-color: var(--border-light); transform: translateY(-2px); }
+        .income-card:hover { border-color: var(--income); transform: translateY(-2px); }
 
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
         
-        .product-input {
-            background: transparent; border: none; color: var(--text-primary); font-weight: 600; font-size: 15px; padding: 0; width: 100%;
+        .product-name {
+            font-weight: 600; font-size: 15px; color: var(--text-primary); line-height: 1.4;
         }
-        .product-input:focus { outline: none; border-bottom: 1px solid var(--income); }
-        
-        .order-badge { 
-            background: var(--income-soft); color: var(--income); font-size: 10px; font-weight: 700; padding: 4px 8px; 
-            border-radius: 4px; white-space: nowrap; border: 1px solid rgba(16,185,129,0.2);
+        .order-badge {
+            background: var(--income-soft); color: var(--income); font-size: 10px; padding: 2px 6px;
+            border-radius: 4px; white-space: nowrap; font-weight: 700; border: 1px solid rgba(16,185,129,0.2);
         }
 
-        .card-details { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 12px; color: var(--text-secondary); }
-        .card-divider { color: var(--border-light); }
-        
-        .detail-input { background: transparent; border: 1px dashed var(--border); color: var(--text-primary); padding: 2px 6px; border-radius: 4px; min-width: 40px; }
-        .detail-input:focus { outline: none; background: var(--bg-input); border-color: var(--text-secondary); }
-
-        .card-calc { 
-            background: var(--bg-input); border-radius: 8px; padding: 10px; 
-            display: flex; align-items: center; justify-content: space-between; gap: 5px; font-family: 'Space Grotesk', monospace;
+        .card-details {
+            font-size: 13px; color: var(--text-secondary); display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
         }
-        
-        .math-group { display: flex; align-items: center; gap: 5px; flex: 1; }
-        .math-input { background: transparent; border: none; color: var(--text-primary); text-align: center; width: 40px; font-size: 13px; }
-        .math-input:focus { outline: none; color: var(--income); text-decoration: underline; }
-        .math-symbol { color: var(--text-muted); font-size: 11px; }
-
-        .card-total { 
-            background: var(--income-soft); color: var(--income); font-weight: 700; 
-            padding: 6px 12px; border-radius: 6px; font-size: 14px; text-align: right;
+        .detail-pill {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            padding: 4px 8px; border-radius: 4px; font-size: 12px;
         }
 
-        /* Animations */
-        .income-card { animation: cardIn 0.3s cubic-bezier(0.16,1,0.3,1) forwards; }
-        @keyframes cardIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .income-card.removing { animation: cardOut 0.25s ease forwards; }
-        @keyframes cardOut { to { opacity: 0; transform: scale(0.9); } }
+        .card-footer {
+            margin-top: auto; border-top: 1px solid var(--border); padding-top: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .amount-display {
+            color: var(--income); font-weight: 700; font-size: 18px; font-family: 'Space Grotesk', monospace;
+        }
 
-        .delete-btn { opacity: 0; position: absolute; top: 10px; right: 10px; cursor: pointer; transition: 0.2s; z-index: 10; }
+        .delete-btn {
+            position: absolute; top: 10px; right: 10px; opacity: 0; cursor: pointer; color: var(--text-muted);
+            transition: 0.2s; background: rgba(0,0,0,0.5); border-radius: 50%; width: 24px; height: 24px;
+            display: flex; align-items: center; justify-content: center; font-size: 12px;
+        }
         .income-card:hover .delete-btn { opacity: 1; }
-        .delete-btn:hover { color: var(--expense) !important; transform: scale(1.1); }
+        .delete-btn:hover { color: var(--expense); background: var(--expense-soft); }
 
-        /* Expense Grid kept standard */
+        /* Layout & Utility */
         .split-col { flex: 1; min-width: 0; overflow: hidden; }
         .col-divider { width: 1px; background: var(--border); flex-shrink: 0; }
 
         .summary-card {
             border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px;
-            background: var(--bg-card); position: relative; overflow: hidden; transition: transform 0.2s;
+            background: var(--bg-card); position: relative; overflow: hidden;
         }
-        .summary-card:hover { transform: translateY(-2px); }
         .summary-card .accent-bar { position: absolute; top: 0; left: 0; right: 0; height: 2px; }
 
         .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
         .panel-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
 
         .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-        .toast { padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; transform: translateX(120%); opacity: 0; transition: all 0.35s cubic-bezier(0.16,1,0.3,1); pointer-events: auto; backdrop-filter: blur(12px); }
-        .toast.show { transform: translateX(0); opacity: 1; }
+        .toast { padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; transform: translateX(120%); transition: all 0.3s cubic-bezier(0.16,1,0.3,1); pointer-events: auto; backdrop-filter: blur(12px); }
+        .toast.show { transform: translateX(0); }
         .toast.success { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.25); color: #34d399; }
         .toast.info { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.25); color: #60a5fa; }
-        .toast.warning { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.25); color: #fbbf24; }
-        .toast.error { background: rgba(244,63,94,0.15); border: 1px solid rgba(244,63,94,0.25); color: #fb7185; }
 
         .save-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); transition: background 0.3s; }
-        .save-dot.saving { background: var(--balance); animation: pulseDot 0.8s ease infinite; }
+        .save-dot.saving { background: var(--balance); animation: pulse 1s infinite; }
         .save-dot.saved { background: var(--income); }
-        @keyframes pulseDot { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
-
-        .sync-pulse { animation: spinPulse 2s infinite linear; }
-        @keyframes spinPulse { 0% { transform: rotate(0deg); opacity: 0.5; } 50% { opacity: 1; } 100% { transform: rotate(360deg); opacity: 0.5; } }
-        
-        .empty-state { padding: 30px 20px; text-align: center; color: var(--text-muted); }
+        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
 
         @media (max-width: 900px) {
             .summary-grid { grid-template-columns: 1fr !important; }
@@ -174,27 +136,18 @@
         }
     </style>
 </head>
-<body class="bg-grid">
-
-    <div class="bg-blob" style="width:500px;height:500px;background:var(--income);top:-100px;left:-100px;"></div>
-    <div class="bg-blob" style="width:400px;height:400px;background:var(--expense);bottom:-80px;right:-80px;"></div>
-
-    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-6">
+<body>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
 
         <!-- Header -->
         <header class="flex flex-wrap items-center justify-between gap-4 mb-8">
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background: var(--income-soft); border: 1px solid rgba(16,185,129,0.2);">
-                    <i class="fa-solid fa-scale-balanced text-sm" style="color:var(--income)"></i>
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--income-soft);">
+                    <i class="fa-solid fa-scale-balanced" style="color:var(--income)"></i>
                 </div>
                 <div>
-                    <h1 class="text-lg font-bold tracking-tight" style="color:var(--text-primary)">Balance Sheet</h1>
-                    <p class="text-xs flex items-center gap-2" style="color:var(--text-muted)">
-                        Auto-syncs & auto-saves to MongoDB
-                        <span id="syncStatus" class="opacity-0 transition-opacity duration-300" style="color:var(--balance); font-size:10px;">
-                            <i class="fa-solid fa-arrows-rotate sync-pulse"></i> Syncing...
-                        </span>
-                    </p>
+                    <h1 class="text-xl font-bold tracking-tight">Balance Sheet</h1>
+                    <p class="text-xs" style="color:var(--text-muted)">Synced from Orders DB</p>
                 </div>
             </div>
 
@@ -209,7 +162,7 @@
                     style="background:var(--income-soft);border:1px solid rgba(16,185,129,0.2);color:var(--income);"
                     onclick="manualSync()">
                     <i class="fa-solid fa-arrows-rotate text-xs"></i>
-                    <span>Sync Now</span>
+                    <span>Sync Orders</span>
                 </button>
 
                 <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs" style="background:var(--bg-card);border:1px solid var(--border);">
@@ -222,58 +175,44 @@
         <!-- Summary Cards -->
         <div class="summary-grid grid grid-cols-3 gap-4 mb-8">
             <div class="summary-card">
-                <div class="accent-bar" style="background:linear-gradient(90deg,var(--income),transparent)"></div>
+                <div class="accent-bar" style="background:var(--income)"></div>
                 <p class="text-xs font-medium mb-1" style="color:var(--text-muted)">TOTAL INCOME</p>
-                <p id="totalIncome" class="text-2xl font-bold font-display" style="color:var(--income)">NPR 0.00</p>
+                <p id="totalIncome" class="text-2xl font-bold font-display" style="color:var(--income)">NPR 0</p>
             </div>
             <div class="summary-card">
-                <div class="accent-bar" style="background:linear-gradient(90deg,var(--expense),transparent)"></div>
+                <div class="accent-bar" style="background:var(--expense)"></div>
                 <p class="text-xs font-medium mb-1" style="color:var(--text-muted)">TOTAL EXPENSES</p>
-                <p id="totalExpense" class="text-2xl font-bold font-display" style="color:var(--expense)">NPR 0.00</p>
+                <p id="totalExpense" class="text-2xl font-bold font-display" style="color:var(--expense)">NPR 0</p>
             </div>
-            <div class="summary-card" id="balanceCard">
-                <div class="accent-bar" style="background:linear-gradient(90deg,var(--balance),transparent)"></div>
+            <div class="summary-card">
+                <div class="accent-bar" style="background:var(--balance)"></div>
                 <p class="text-xs font-medium mb-1" style="color:var(--text-muted)">NET BALANCE</p>
-                <p id="netBalance" class="text-2xl font-bold font-display" style="color:var(--balance)">NPR 0.00</p>
+                <p id="netBalance" class="text-2xl font-bold font-display" style="color:var(--balance)">NPR 0</p>
             </div>
         </div>
 
-        <!-- MAIN PANEL -->
+        <!-- Main Panel -->
         <div class="panel">
-            <div class="panel-header flex-wrap gap-3">
-                <div class="flex items-center gap-2">
-                    <div class="w-2.5 h-2.5 rounded-full" style="background:var(--income)"></div>
-                    <h2 class="text-sm font-bold font-display tracking-wide" style="color:var(--text-primary)">ENTRIES</h2>
-                    <div class="w-2.5 h-2.5 rounded-full ml-2" style="background:var(--expense)"></div>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="addIncomeEntry()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition hover:brightness-110"
-                        style="background:var(--income-soft);color:var(--income);border:1px solid rgba(16,185,129,0.15);">
-                        <i class="fa-solid fa-plus text-[10px]"></i> Income
-                    </button>
-                    <button onclick="addExpenseEntry()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition hover:brightness-110"
-                        style="background:var(--expense-soft);color:var(--expense);border:1px solid rgba(244,63,94,0.15);">
-                        <i class="fa-solid fa-plus text-[10px]"></i> Expense
-                    </button>
-                </div>
+            <div class="panel-header">
+                <h2 class="text-sm font-bold font-display" style="color:var(--text-primary)">INCOME ENTRIES</h2>
             </div>
 
-            <div class="flex main-split">
+            <div class="flex main-split" style="min-height: 500px;">
                 
-                <!-- INCOME SIDE (NEW BLOCK LAYOUT) -->
+                <!-- INCOME SIDE -->
                 <div class="split-col">
-                    <div id="incomeEntries" class="income-grid-container"></div>
+                    <div id="incomeEntries" class="income-grid-container">
+                        <!-- Blocks will be injected here -->
+                    </div>
                     
                     <div class="px-5 py-3 items-center flex justify-between" style="border-top: 2px solid var(--border); background:rgba(16,185,129,0.03);">
                         <span class="text-xs font-bold tracking-wider" style="color:var(--text-muted)">TOTAL</span>
-                        <span id="incomeTotalInline" class="text-sm font-bold font-display" style="color:var(--income)">NPR 0.00</span>
+                        <span id="incomeTotalInline" class="text-sm font-bold font-display" style="color:var(--income)">NPR 0</span>
                     </div>
                 </div>
 
-                <!-- VERTICAL DIVIDER -->
+                <!-- EXPENSE SIDE (Simplified) -->
                 <div class="col-divider"></div>
-
-                <!-- EXPENSE SIDE (STANDARD GRID) -->
                 <div class="split-col">
                     <div class="grid gap-2 px-5 py-2.5 text-[10px] font-semibold tracking-widest" style="grid-template-columns: 100px 1fr 100px 30px; color:var(--text-muted); border-bottom:1px solid var(--border); background:rgba(244,63,94,0.03);">
                         <span>DATE</span><span>EXPENSE HEAD</span><span class="text-right">AMOUNT</span><span></span>
@@ -282,7 +221,7 @@
                     <div class="grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 100px 1fr 100px 30px; border-top: 2px solid var(--border); background:rgba(244,63,94,0.03);">
                         <span></span>
                         <span class="text-xs font-bold tracking-wider" style="color:var(--text-muted)">TOTAL</span>
-                        <span id="expenseTotalInline" class="text-sm font-bold font-display text-right" style="color:var(--expense)">NPR 0.00</span>
+                        <span id="expenseTotalInline" class="text-sm font-bold font-display text-right" style="color:var(--expense)">NPR 0</span>
                         <span></span>
                     </div>
                 </div>
@@ -292,7 +231,7 @@
 
     </div>
 
-    <!-- Toast container -->
+    <!-- Toasts -->
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
@@ -361,10 +300,10 @@
     };
 
     // ============================================================
-    // UTILITY FUNCTIONS
+    // UTILITIES
     // ============================================================
     function formatCurrency(amount) {
-        return 'NPR ' + (parseFloat(amount) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return 'NPR ' + (parseFloat(amount) || 0).toLocaleString('en-NP');
     }
     function getMonthLabel() {
         const m = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -387,51 +326,196 @@
     }
 
     // ============================================================
-    // AUTO-SAVE WITH DEBOUNCE
+    // SYNCING LOGIC (UPDATED BASED ON ORDER.HTML)
     // ============================================================
+    async function autoSyncOrders() {
+        console.log("Syncing orders based on provided schema...");
+        const freshOrders = await DB.find('orders');
+
+        // We use a composite key to identify specific items within orders
+        // Format: "OrderID_ItemID" (e.g., "6a0d6371_111")
+        const existingKeys = new Set(state.incomeData.map(e => e.uniqueKey));
+        
+        let itemsAddedCount = 0;
+
+        if (freshOrders && Array.isArray(freshOrders)) {
+            for (const order of freshOrders) {
+                // Check if order has items array
+                if (order.items && Array.isArray(order.items)) {
+                    const orderDate = order.timestamp ? new Date(order.timestamp).toISOString().split('T')[0] : todayStr();
+                    const shortOrderId = String(order._id).substring(0, 8);
+
+                    for (const item of order.items) {
+                        // Create unique key for this specific line item
+                        const itemKey = `${order._id}_${item.id || item.name}`;
+                        
+                        // If this exact item is not in our income sheet yet
+                        if (!existingKeys.has(itemKey)) {
+                            const newEntry = await DB.insertOne('income', {
+                                date: orderDate,
+                                product: item.name || 'Unknown Item',
+                                form: item.form || '',
+                                qtyUnit: `${item.qty || 1} ${item.unit || ''}`,
+                                amount: (item.qty || 1) * (item.price || 0),
+                                uniqueKey: itemKey, // Save this to prevent duplicates
+                                orderNo: shortOrderId
+                            });
+                            
+                            if (newEntry) {
+                                state.incomeData.push(newEntry);
+                                itemsAddedCount++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (itemsAddedCount > 0) {
+            showToast(`Synced ${itemsAddedCount} new item(s)`, 'success');
+            renderIncomeEntries();
+            updateSummary();
+        } else {
+            console.log("No new items found.");
+        }
+    }
+
+    async function manualSync() {
+        const btn = document.getElementById('syncBtn');
+        const icon = btn.querySelector('i');
+        icon.classList.add('fa-spin');
+        btn.disabled = true;
+        
+        await autoSyncOrders();
+        
+        icon.classList.remove('fa-spin');
+        btn.disabled = false;
+        showToast('Sync complete', 'info');
+    }
+
+    // ============================================================
+    // RENDERING
+    // ============================================================
+    function renderMonthLabel() { document.getElementById('monthLabel').textContent = getMonthLabel(); }
+
+    function renderIncomeEntries() {
+        const container = document.getElementById('incomeEntries');
+        const entries = state.incomeData.filter(e => isDateInMonth(e.date));
+
+        if (entries.length === 0) {
+            container.innerHTML = `<div class="empty-state col-span-full py-10" style="color:var(--text-muted); text-align:center;">No income this month. Click Sync to load orders.</div>`;
+            return;
+        }
+
+        container.innerHTML = entries.map(entry => `
+            <div class="income-card" data-entry-id="${entry._id}">
+                <button class="delete-btn" onclick="deleteEntry('income','${entry._id}')"><i class="fa-solid fa-trash"></i></button>
+                
+                <div class="card-top">
+                    <div class="product-name">${escapeHtml(entry.product)}</div>
+                    ${entry.orderNo ? `<span class="order-badge">#${escapeHtml(entry.orderNo)}</span>` : ''}
+                </div>
+
+                <div class="card-details">
+                    ${entry.form ? `<span class="detail-pill">${escapeHtml(entry.form)}</span>` : ''}
+                    <span class="detail-pill" style="color:var(--text-primary); font-weight:500;">${escapeHtml(entry.qtyUnit)}</span>
+                </div>
+
+                <div class="card-footer">
+                    <span style="font-size:11px; color:var(--text-muted);">TOTAL</span>
+                    <div class="amount-display">${formatCurrency(entry.amount)}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function renderExpenseEntries() {
+        const container = document.getElementById('expenseEntries');
+        const entries = state.expenseData.filter(e => isDateInMonth(e.date));
+        if (entries.length === 0) {
+            container.innerHTML = `<div class="empty-state py-8" style="text-align:center; color:var(--text-muted)">No expenses this month</div>`;
+            return;
+        }
+        container.innerHTML = entries.map(entry => `
+            <div class="grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 100px 1fr 100px 30px; border-bottom: 1px solid var(--border);" data-entry-id="${entry._id}">
+                <input type="date" class="bs-input" data-field="date" value="${entry.date ? entry.date.split('T')[0] : ''}">
+                <input type="text" class="bs-input" data-field="head" value="${escapeHtml(entry.head || '')}" placeholder="Head...">
+                <input type="number" class="bs-input" data-field="amount" value="${entry.amount || ''}" placeholder="0.00">
+                <button class="text-xs" style="color:var(--expense); cursor:pointer;" onclick="deleteEntry('expense','${entry._id}')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+        `).join('');
+    }
+
+    // ============================================================
+    // ACTIONS & SAVE
+    // ============================================================
+    async function addIncomeEntry() {
+        const newEntry = await DB.insertOne('income', { date: todayStr(), product: '', form: '', qtyUnit: '', amount: 0 });
+        if (newEntry) {
+            state.incomeData.push(newEntry);
+            renderIncomeEntries();
+            updateSummary();
+        }
+    }
+
+    async function addExpenseEntry() {
+        const newEntry = await DB.insertOne('expenses', { date: todayStr(), head: '', amount: 0 });
+        if (newEntry) {
+            state.expenseData.push(newEntry);
+            renderExpenseEntries();
+            updateSummary();
+        }
+    }
+
+    async function deleteEntry(type, id) {
+        if(!confirm("Delete this entry?")) return;
+        const card = document.querySelector(`#incomeEntries [data-entry-id="${id}"]`) || document.querySelector(`#expenseEntries [data-entry-id="${id}"]`);
+        if (card) {
+            card.style.opacity = '0.5';
+            const success = await DB.deleteOne(type === 'income' ? 'income' : 'expenses', id);
+            if (success) {
+                if (type === 'income') state.incomeData = state.incomeData.filter(e => e._id !== id);
+                else state.expenseData = state.expenseData.filter(e => e._id !== id);
+                
+                if (type === 'income') renderIncomeEntries();
+                else renderExpenseEntries();
+                updateSummary();
+                showToast('Entry deleted', 'success');
+            }
+        }
+    }
+
     function debounceSave() {
         const dot = document.getElementById('saveDot');
         const label = document.getElementById('saveLabel');
         dot.className = 'save-dot saving';
         label.textContent = 'Saving...';
-        label.style.color = 'var(--balance)';
         clearTimeout(state.saveTimeout);
-        state.saveTimeout = setTimeout(performSave, 800); // Slightly longer delay for typing
+        state.saveTimeout = setTimeout(performSave, 800);
     }
 
     async function performSave() {
+        // Save Income
         const cards = document.querySelectorAll('.income-card');
         const incomes = [];
-        
         cards.forEach(card => {
             const id = card.dataset.entryId;
-            const product = card.querySelector('[data-field="product"]').value;
-            const orderNo = card.querySelector('[data-field="orderNo"]').value;
-            const productId = card.querySelector('[data-field="productId"]').value;
-            const formFactor = card.querySelector('[data-field="formFactor"]').value;
-            const qtyUnit = card.querySelector('[data-field="qtyUnit"]').value;
-            const qty = parseFloat(card.querySelector('[data-field="qty"]').value) || 0;
-            const rate = parseFloat(card.querySelector('[data-field="rate"]').value) || 0;
-            const amount = parseFloat(card.querySelector('[data-field="amount"]').value) || 0;
-            
-            if (id) {
-                incomes.push({ 
-                    _id: id, 
-                    product, orderNo, productId, formFactor, qtyUnit, qty, rate, amount
-                });
-            }
+            const product = card.querySelector('.product-name').innerText;
+            const amount = parseFloat(card.querySelector('.amount-display').innerText.replace(/[^0-9.-]+/g,"")) || 0;
+            // We read the text content for display purposes, but ideally we might want editable inputs if you plan to change the synced data manually later.
+            // For now, we save back what we have.
+            incomes.push({ _id: id, product, amount });
         });
 
-        const expenseRows = document.querySelectorAll('#expenseEntries .entry-row');
+        // Save Expenses
+        const rows = document.querySelectorAll('#expenseEntries .grid');
         const expenses = [];
-        expenseRows.forEach(row => {
+        rows.forEach(row => {
             const id = row.dataset.entryId;
-            const dateInput = row.querySelector('[data-field="date"]');
-            const headInput = row.querySelector('[data-field="head"]');
-            const amountInput = row.querySelector('[data-field="amount"]');
-            if (id && dateInput && headInput && amountInput) {
-                expenses.push({ _id: id, date: dateInput.value, head: headInput.value, amount: parseFloat(amountInput.value) || 0 });
-            }
+            const date = row.querySelector('[data-field="date"]').value;
+            const head = row.querySelector('[data-field="head"]').value;
+            const amount = parseFloat(row.querySelector('[data-field="amount"]').value) || 0;
+            expenses.push({ _id: id, date, head, amount });
         });
 
         const incSuccess = await DB.saveAll('income', incomes);
@@ -452,236 +536,18 @@
     }
 
     // ============================================================
-    // CALCULATION LOGIC
+    // SUMMARY & INIT
     // ============================================================
-    function calculateCardTotal(input) {
-        const card = input.closest('.income-card');
-        const qtyInput = card.querySelector('[data-field="qty"]');
-        const rateInput = card.querySelector('[data-field="rate"]');
-        const totalDisplay = card.querySelector('[data-field="amount"]');
-        
-        const qty = parseFloat(qtyInput.value) || 0;
-        const rate = parseFloat(rateInput.value) || 0;
-        
-        if (qty > 0 && rate > 0) {
-            totalDisplay.value = (qty * rate).toFixed(2);
-            updateSummary();
-            debounceSave();
-        } else if (qty === 0 || rate === 0) {
-             // Allow manual editing of total if inputs are empty/zero
-             if(input !== qtyInput && input !== rateInput) {
-                 updateSummary();
-                 debounceSave();
-             }
-        }
-    }
-
-    // ============================================================
-    // SYNCING LOGIC (UPDATED FOR NEW FIELDS)
-    // ============================================================
-    
-    function showSyncStatus(active) {
-        const el = document.getElementById('syncStatus');
-        el.style.opacity = active ? '1' : '0';
-    }
-
-    async function autoSyncOrders() {
-        showSyncStatus(true);
-        console.log("Starting block sync...");
-        const freshOrders = await DB.find('orders');
-
-        const existingKeys = new Set(state.incomeData.map(e => e.orderNo || e.orderId || e._id));
-        
-        const newOrders = freshOrders.filter(o => {
-            const key = o.orderNo || o.orderId || o._id;
-            if(!key) return false;
-            return !existingKeys.has(key);
-        });
-
-        if (newOrders.length > 0) {
-            state.orderData = freshOrders;
-            
-            for (const order of newOrders) {
-                const productName = order.product || order.name || 'General Item';
-                const orderId = order.orderNo || order.orderId || order._id;
-                const productId = order.productId || order.id || '';
-                const formFactor = order.unit || order.formFactor || '';
-                const qtyUnit = order.qty || order.quantity || '';
-                const amount = order.amount || 0;
-                
-                // Calculate rate backwards (Amount / 1 if no count provided, or assume 1)
-                const rate = amount; 
-                const qty = 1;
-
-                const newEntry = await DB.insertOne('income', {
-                    date: order.date || todayStr(),
-                    product: productName,
-                    orderNo: orderId,
-                    productId: productId,
-                    formFactor: formFactor,
-                    qtyUnit: qtyUnit,
-                    qty: qty,
-                    rate: rate,
-                    amount: amount
-                });
-                if (newEntry) state.incomeData.push(newEntry);
-            }
-            
-            const currentMonthNewOrders = newOrders.filter(o => isDateInMonth(o.date));
-            if(currentMonthNewOrders.length > 0) {
-                renderIncomeEntries();
-                updateSummary();
-            }
-            
-            showToast(`Auto-synced ${newOrders.length} new order(s)`, 'success');
-        } else {
-            state.orderData = freshOrders;
-        }
-        showSyncStatus(false);
-    }
-
-    async function manualSync() {
-        const btn = document.getElementById('syncBtn');
-        btn.style.pointerEvents = 'none';
-        const icon = btn.querySelector('i');
-        icon.style.animation = 'spinPulse 0.6s linear infinite';
-        
-        await autoSyncOrders();
-        showToast('Manual sync complete', 'info');
-        
-        icon.style.animation = '';
-        btn.style.pointerEvents = '';
-    }
-
-    // ============================================================
-    // DATA OPERATIONS
-    // ============================================================
-    async function addIncomeEntry() {
-        const newEntry = await DB.insertOne('income', { 
-            date: todayStr(), product: '', orderNo: '', productId: '', formFactor: '', qtyUnit: '', qty: 1, rate: 0, amount: 0 
-        });
-        if (newEntry) {
-            state.incomeData.push(newEntry);
-            renderIncomeEntries();
-            updateSummary();
-            setTimeout(() => { 
-                const input = document.querySelector(`#incomeEntries [data-entry-id="${newEntry._id}"] input[data-field="product"]`); 
-                if(input) input.focus(); 
-            }, 50);
-        }
-    }
-
-    async function addExpenseEntry() {
-        const newEntry = await DB.insertOne('expenses', { date: todayStr(), head: '', amount: 0 });
-        if (newEntry) {
-            state.expenseData.push(newEntry);
-            renderExpenseEntries();
-            updateSummary();
-            setTimeout(() => { const row = document.querySelector(`#expenseEntries [data-entry-id="${newEntry._id}"] input[data-field="head"]`); if(row) row.focus(); }, 50);
-        }
-    }
-
-    async function deleteEntry(type, id) {
-        if(!confirm("Are you sure you want to delete this entry?")) return;
-        
-        const card = document.querySelector(`#incomeEntries [data-entry-id="${id}"]`) || document.querySelector(`#expenseEntries [data-entry-id="${id}"]`);
-        if (card) {
-            card.classList.add('removing');
-            setTimeout(async () => {
-                const success = await DB.deleteOne(type === 'income' ? 'income' : 'expenses', id);
-                if (success) {
-                    if (type === 'income') state.incomeData = state.incomeData.filter(e => e._id !== id);
-                    else state.expenseData = state.expenseData.filter(e => e._id !== id);
-                    
-                    if (type === 'income') renderIncomeEntries();
-                    else renderExpenseEntries();
-                    updateSummary();
-                    showToast('Entry deleted', 'warning');
-                }
-            }, 250);
-        }
-    }
-
-    // ============================================================
-    // UI RENDERING (BLOCK VIEW)
-    // ============================================================
-    function renderMonthLabel() { document.getElementById('monthLabel').textContent = getMonthLabel(); }
-
-    function renderIncomeEntries() {
-        const container = document.getElementById('incomeEntries');
-        const entries = state.incomeData.filter(e => isDateInMonth(e.date));
-        
-        if (entries.length === 0) {
-            container.innerHTML = `<div class="empty-state col-span-full py-10"><p class="text-xs" style="color:var(--text-muted)">No income this month. Click 'Income' to add.</p></div>`;
-            return;
-        }
-
-        container.innerHTML = entries.map(entry => `
-            <div class="income-card" data-entry-id="${entry._id}">
-                <button class="delete-btn text-xs" style="color:var(--text-muted)" onclick="deleteEntry('income','${entry._id}')" aria-label="Delete"><i class="fa-solid fa-trash"></i></button>
-                
-                <!-- Header -->
-                <div class="card-header">
-                    <input type="text" class="product-input" data-field="product" value="${escapeHtml(entry.product)}" placeholder="Product Name" aria-label="Product">
-                    ${entry.orderNo ? `<span class="order-badge">#${escapeHtml(entry.orderNo)}</span>` : ''}
-                </div>
-
-                <!-- Details -->
-                <div class="card-details">
-                    <span>ID:</span> 
-                    <input type="text" class="detail-input" data-field="productId" value="${escapeHtml(entry.productId || '')}" placeholder="ID">
-                    
-                    <span class="card-divider">|</span>
-                    
-                    <input type="text" class="detail-input" data-field="formFactor" value="${escapeHtml(entry.formFactor || '')}" placeholder="Form">
-                    
-                    <span class="card-divider">|</span>
-                    
-                    <input type="text" class="detail-input" data-field="qtyUnit" value="${escapeHtml(entry.qtyUnit || '')}" placeholder="e.g. 500gm">
-                </div>
-
-                <!-- Calculation -->
-                <div class="card-calc">
-                    <div class="math-group">
-                        <span class="math-symbol">x</span>
-                        <input type="number" class="math-input" data-field="qty" value="${entry.qty || 1}" oninput="calculateCardTotal(this)">
-                        <span class="math-symbol">@</span>
-                        <input type="number" class="math-input" style="width:60px; text-align:right;" data-field="rate" value="${entry.rate || 0}" oninput="calculateCardTotal(this)">
-                    </div>
-                    <span class="math-symbol">=</span>
-                    <div class="card-total" data-field="amount">${(entry.amount || 0).toFixed(2)}</div>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function renderExpenseEntries() {
-        const container = document.getElementById('expenseEntries');
-        const entries = state.expenseData.filter(e => isDateInMonth(e.date));
-        if (entries.length === 0) {
-            container.innerHTML = `<div class="empty-state py-8"><p class="text-xs" style="color:var(--text-muted)">No expenses this month</p></div>`;
-            return;
-        }
-        container.innerHTML = entries.map(entry => `
-            <div class="entry-row grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 100px 1fr 100px 30px; border-bottom: 1px solid var(--border);" data-entry-id="${entry._id}">
-                <input type="date" class="bs-input expense-input" data-field="date" value="${entry.date ? entry.date.split('T')[0] : ''}" aria-label="Date">
-                <input type="text" class="bs-input expense-input" data-field="head" value="${escapeHtml(entry.head || '')}" placeholder="Expense head..." aria-label="Head">
-                <input type="number" class="bs-input expense-input" data-field="amount" value="${entry.amount || ''}" placeholder="0.00" step="0.01" min="0" aria-label="Amount">
-                <button class="delete-btn text-sm" style="color:var(--text-muted)" onclick="deleteEntry('expense','${entry._id}')" aria-label="Delete"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-        `).join('');
-    }
-
     function updateSummary() {
         let totalIncome = 0, totalExpense = 0;
         
-        // Sum Income Cards
+        // Sum Income Blocks
         document.querySelectorAll('.income-card').forEach(card => {
-            totalIncome += parseFloat(card.querySelector('[data-field="amount"]').innerText || 0) || 0;
+            totalIncome += parseFloat(card.querySelector('.amount-display').innerText.replace(/[^0-9.-]+/g,"")) || 0;
         });
         
         // Sum Expenses
-        document.querySelectorAll('#expenseEntries .entry-row').forEach(row => {
+        document.querySelectorAll('#expenseEntries .grid').forEach(row => {
             totalExpense += parseFloat(row.querySelector('[data-field="amount"]')?.value || 0) || 0;
         });
 
@@ -691,30 +557,6 @@
         document.getElementById('netBalance').textContent = formatCurrency(net);
         document.getElementById('incomeTotalInline').textContent = formatCurrency(totalIncome);
         document.getElementById('expenseTotalInline').textContent = formatCurrency(totalExpense);
-
-        const balanceEl = document.getElementById('netBalance');
-        const accentBar = document.querySelector('#balanceCard .accent-bar');
-        if (net >= 0) {
-            balanceEl.style.color = 'var(--income)';
-            accentBar.style.background = 'linear-gradient(90deg,var(--income),transparent)';
-        } else {
-            balanceEl.style.color = 'var(--expense)';
-            accentBar.style.background = 'linear-gradient(90deg,var(--expense),transparent)';
-        }
-    }
-
-    // ============================================================
-    // TOAST & NAVIGATION
-    // ============================================================
-    function showToast(message, type = 'info') {
-        const container = document.getElementById('toastContainer');
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        const icons = { success: 'fa-check-circle', info: 'fa-info-circle', warning: 'fa-exclamation-triangle', error: 'fa-times-circle' };
-        toast.innerHTML = `<i class="fa-solid ${icons[type]}"></i><span>${message}</span>`;
-        container.appendChild(toast);
-        requestAnimationFrame(() => toast.classList.add('show'));
-        setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 350); }, 3000);
     }
 
     function changeMonth(delta) {
@@ -724,33 +566,36 @@
         renderMonthLabel(); renderIncomeEntries(); renderExpenseEntries(); updateSummary();
     }
 
-    // ============================================================
-    // EVENT HANDLING & INIT
-    // ============================================================
-    function setupEventDelegation() {
-        document.getElementById('incomeEntries').addEventListener('input', (e) => {
-            if(e.target.dataset.field !== 'qty' && e.target.dataset.field !== 'rate') {
-                debounceSave();
-            }
-        });
-        document.getElementById('expenseEntries').addEventListener('input', () => { updateSummary(); debounceSave(); });
+    function showToast(msg, type='info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `<span>${msg}</span>`;
+        container.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('show'));
+        setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 350); }, 3000);
     }
 
     async function init() {
         renderMonthLabel();
         try {
-            await fetch('/api/seed/orders');
             state.incomeData = await DB.find('income');
             state.expenseData = await DB.find('expenses');
+            
+            // Initial Sync
             await autoSyncOrders();
+            
             renderIncomeEntries();
             renderExpenseEntries();
             updateSummary();
-            setupEventDelegation();
-            showToast('Balance sheet loaded', 'success');
+            
+            // Event Delegation for expenses (Income blocks are mostly read-only displays synced from DB)
+            document.getElementById('expenseEntries').addEventListener('input', () => { updateSummary(); debounceSave(); });
+            
+            showToast('Loaded', 'success');
         } catch (err) {
-            console.error('Initialization error:', err);
-            showToast('Failed to connect to database', 'error');
+            console.error(err);
+            showToast('Error loading data', 'error');
         }
     }
 
