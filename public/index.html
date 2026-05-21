@@ -24,7 +24,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@200;400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     
-    <!-- YOUR CUSTOM CSS FILE -->
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -50,13 +50,19 @@
                     <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--bg-primary)] transition" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right text-xs" style="color:var(--text-secondary)"></i></button>
                 </div>
 
-                <!-- Sync Button -->
+                <!-- Manual Sync Button -->
                 <button id="syncBtn" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all hover:brightness-110"
                     style="background:var(--income-soft);border:1px solid rgba(16,185,129,0.2);color:var(--income);"
                     onclick="manualSync()">
                     <i class="fa-solid fa-arrows-rotate text-xs"></i>
                     <span>Sync Orders</span>
                 </button>
+
+                <!-- Auto Sync Toggle -->
+                <label class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs cursor-pointer" style="background:var(--bg-card);border:1px solid var(--border);">
+                    <input type="checkbox" id="autoSyncCheck" onchange="toggleAutoSync(this.checked)" style="accent-color:var(--income); width:14px; height:14px;">
+                    <span style="color:var(--text-muted)">Auto (5m)</span>
+                </label>
 
                 <!-- Save Status Indicator -->
                 <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs" style="background:var(--bg-card);border:1px solid var(--border);">
@@ -87,11 +93,10 @@
 
         <!-- Main Panel -->
         <div class="panel">
-            <!-- PANEL HEADER WITH ADD BUTTONS -->
+            <!-- Panel Header with Add Buttons -->
             <div class="panel-header">
                 <h2 class="text-sm font-bold font-display" style="color:var(--text-primary)">ENTRIES</h2>
                 
-                <!-- RESTORED ADD BUTTONS -->
                 <div class="flex gap-2">
                     <button onclick="addIncomeEntry()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition hover:brightness-110"
                         style="background:var(--income-soft);color:var(--income);border:1px solid rgba(16,185,129,0.15);">
@@ -108,7 +113,7 @@
                 
                 <!-- INCOME SIDE -->
                 <div class="split-col">
-                    <!-- The JS injects the Table Header and Rows here -->
+                    <!-- JS Injects Table Here -->
                     <div id="incomeEntries"></div>
                     
                     <div class="px-5 py-3 items-center flex justify-between" style="border-top: 2px solid var(--border); background:rgba(16,185,129,0.03);">
@@ -120,7 +125,7 @@
                 <!-- EXPENSE SIDE -->
                 <div class="col-divider"></div>
                 <div class="split-col">
-                    <!-- The JS injects the Table Header and Rows here -->
+                    <!-- JS Injects Table Here -->
                     <div id="expenseEntries"></div>
                     
                     <div class="px-5 py-3 items-center flex justify-between" style="border-top: 2px solid var(--border); background:rgba(244,63,94,0.03);">
@@ -139,7 +144,7 @@
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- YOUR CUSTOM JS FILE -->
+    <!-- Custom JS -->
     <script src="js/app.js"></script>
 </body>
 </html>
