@@ -56,7 +56,7 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
 /* Header Row */
 .table-header {
     display: grid;
-    grid-template-columns: 110px 2fr 1.5fr 120px 30px; /* Date | Product | Details | Amount | Action */
+    grid-template-columns: 110px 2fr 1.5fr 120px 30px; /* Default Income Layout */
     background: var(--bg-card);
     border-bottom: 2px solid var(--border);
     padding: 12px 16px;
@@ -73,7 +73,7 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
 /* Data Row */
 .entry-row {
     display: grid;
-    grid-template-columns: 110px 2fr 1.5fr 120px 30px;
+    grid-template-columns: 110px 2fr 1.5fr 120px 30px; /* Default Income Layout */
     padding: 10px 16px;
     border-bottom: 1px solid var(--border);
     align-items: center;
@@ -83,7 +83,7 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
 .entry-row:last-child { border-bottom: none; }
 
 /* Detail Pill (Inside Details Column) */
-.detail-tag {
+.detail-pill {
     background: rgba(255,255,255,0.05); border: 1px solid var(--border);
     color: var(--text-secondary); font-size: 11px; padding: 2px 6px; border-radius: 4px;
     margin-right: 4px;
@@ -99,7 +99,7 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
 }
 .summary-card .accent-bar { position: absolute; top: 0; left: 0; right: 0; height: 2px; }
 
-.panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+.panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
 .panel-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
 
 .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
@@ -117,9 +117,26 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
     .summary-grid { grid-template-columns: 1fr !important; }
     .main-split { flex-direction: column !important; }
     .col-divider { width: 100% !important; height: 1px !important; }
-    /* Mobile Table View - Stacked or Scrollable */
+    /* Mobile Table View */
     .table-header, .entry-row {
-        grid-template-columns: 80px 1fr 80px 30px; /* Hide details on very small screens or stack */
+        grid-template-columns: 80px 1fr 80px 30px; 
         gap: 5px;
     }
+}
+
+/* ============================================================
+   FIX: LEFT ALIGN DATE COLUMN
+   ============================================================ */
+
+/* 1. Align the Header text "Date" to the left */
+.table-header span:first-child {
+    text-align: left;
+}
+
+/* 2. Force Date Inputs to align Left and fit fully */
+.entry-row input[type="date"] {
+    text-align: left !important;
+    padding-left: 0px; /* Remove extra padding to ensure full visibility */
+    padding-right: 0px;
+    width: 100%;
 }
