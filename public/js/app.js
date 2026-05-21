@@ -160,7 +160,7 @@ function renderIncomeEntries() {
     const entries = state.incomeData.filter(e => isDateInMonth(e.date));
 
     if (entries.length === 0) {
-        container.innerHTML = `<div class="empty-state py-10" style="text-align:center; color:var(--text-muted);">No income this month. Click Sync to load orders.</div>`;
+        container.innerHTML = `<div class="empty-state py-10" style="text-align:center; color:var(--text-muted);">No income this month. Click Add Income or Sync.</div>`;
         return;
     }
 
@@ -179,22 +179,13 @@ function renderIncomeEntries() {
     entries.forEach(entry => {
         html += `
         <div class="entry-row" data-entry-id="${entry._id}">
-            <!-- Date -->
             <input type="date" class="bs-input-plain" data-field="date" value="${entry.date ? entry.date.split('T')[0] : ''}">
-            
-            <!-- Product -->
             <input type="text" class="bs-input-plain" data-field="product" value="${escapeHtml(entry.product)}" placeholder="Product Name">
-            
-            <!-- Details (Form + Qty) -->
             <div style="display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
                 ${entry.form ? `<span class="detail-tag">${escapeHtml(entry.form)}</span>` : ''}
                 <span style="font-size:12px; color:var(--text-secondary);">${escapeHtml(entry.qtyUnit)}</span>
             </div>
-            
-            <!-- Amount -->
             <input type="number" class="bs-input-plain" data-field="amount" style="text-align:right;" value="${entry.amount || ''}" placeholder="0">
-            
-            <!-- Delete -->
             <button onclick="deleteEntry('income','${entry._id}')" style="color:var(--text-muted); background:none; border:none; cursor:pointer; opacity:0.5;" title="Delete">
                 <i class="fa-solid fa-trash"></i>
             </button>
@@ -242,11 +233,21 @@ function renderExpenseEntries() {
 // ACTIONS & SAVE
 // ============================================================
 async function addIncomeEntry() {
+    // 1. Create a blank entry in DB with today's date
     const newEntry = await DB.insertOne('income', { date: todayStr(), product: '', form: '', qtyUnit: '', amount: 0 });
     if (newEntry) {
+        // 2. Update local state
         state.incomeData.push(newEntry);
+        // 3. Re-render table
         renderIncomeEntries();
+        // 4. Update totals
         updateSummary();
+        
+        // 5. Focus on the new product input immediately
+        setTimeout(() => {
+            const inputs = document.querySelectorAll('#incomeEntries input[data-field="product"]');
+            if (inputs.length > 0) inputs[inputs.length - 1].focus();
+        }, 50);
     }
 }
 
@@ -256,6 +257,11 @@ async function addExpenseEntry() {
         state.expenseData.push(newEntry);
         renderExpenseEntries();
         updateSummary();
+        
+        setTimeout(() => {
+            const inputs = document.querySelectorAll('#expenseEntries input[data-field="head"]');
+            if (inputs.length > 0) inputs[inputs.length - 1].focus();
+        }, 50);
     }
 }
 
@@ -277,17 +283,20 @@ async function deleteEntry(type, id) {
     }
 }
 
+// Debounced Auto-Save
 function debounceSave() {
     const dot = document.getElementById('saveDot');
     const label = document.getElementById('saveLabel');
     dot.className = 'save-dot saving';
     label.textContent = 'Saving...';
+    label.style.color = 'var(--balance)';
+    
     clearTimeout(state.saveTimeout);
     state.saveTimeout = setTimeout(performSave, 800);
 }
 
 async function performSave() {
-    // Save Income
+    // 1. Gather Income Data
     const rows = document.querySelectorAll('#incomeEntries .entry-row');
     const incomes = [];
     rows.forEach(row => {
@@ -298,7 +307,7 @@ async function performSave() {
         incomes.push({ _id: id, date, product, amount });
     });
 
-    // Save Expenses
+    // 2. Gather Expense Data
     const expenseRows = document.querySelectorAll('#expenseEntries .entry-row');
     const expenses = [];
     expenseRows.forEach(row => {
@@ -309,11 +318,14 @@ async function performSave() {
         expenses.push({ _id: id, date, head, amount });
     });
 
+    // 3. Send to Server
     const incSuccess = await DB.saveAll('income', incomes);
     const expSuccess = await DB.saveAll('expenses', expenses);
 
+    // 4. Update UI Status
     const dot = document.getElementById('saveDot');
     const label = document.getElementById('saveLabel');
+    
     if (incSuccess && expSuccess) {
         dot.className = 'save-dot saved';
         label.textContent = 'All saved';
@@ -323,7 +335,13 @@ async function performSave() {
         label.textContent = 'Save failed';
         label.style.color = 'var(--expense)';
     }
-    setTimeout(() => { dot.className = 'save-dot'; label.style.color = 'var(--text-muted)'; label.textContent = 'Auto-save active'; }, 3000);
+    
+    // Reset status after 3 seconds
+    setTimeout(() => { 
+        dot.className = 'save-dot'; 
+        label.style.color = 'var(--text-muted)'; 
+        label.textContent = 'Auto-save active'; 
+    }, 3000);
 }
 
 // ============================================================
@@ -368,16 +386,20 @@ function showToast(msg, type='info') {
 async function init() {
     renderMonthLabel();
     try {
+        // Load Data
         state.incomeData = await DB.find('income');
         state.expenseData = await DB.find('expenses');
         
+        // Initial Sync
         await autoSyncOrders();
         
+        // Render Views
         renderIncomeEntries();
         renderExpenseEntries();
         updateSummary();
         
-        // Attach listeners to the containers for auto-save on input
+        // Attach Auto-Save Listeners to the CONTAINERS
+        // This ensures even NEW rows added later trigger the save
         document.getElementById('incomeEntries').addEventListener('input', () => { updateSummary(); debounceSave(); });
         document.getElementById('expenseEntries').addEventListener('input', () => { updateSummary(); debounceSave(); });
         
@@ -388,4 +410,5 @@ async function init() {
     }
 }
 
+// Start
 init();
