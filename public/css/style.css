@@ -145,29 +145,29 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
    PRINT STYLES
    ============================================================ */
 @media print {
-    /* Set page to Landscape */
+    /* 1. Page Setup */
     @page {
         size: landscape;
         margin: 0.5cm;
     }
 
-    /* White Background */
+    /* 2. Background & Color Reset */
     body {
         background: white !important;
         color: black !important;
     }
 
-    /* Hide unnecessary elements */
-    header > div:last-child, 
-    .panel-header button,
-    .delete-btn,
-    .toast-container,
+    /* 3. Hide Unnecessary Elements */
+    header > div:last-child, /* Top right controls */
+    .panel-header button,    /* Add/Delete buttons */
+    .delete-btn,            /* Delete icons */
+    .toast-container,       /* Notifications */
     .save-dot, 
     #saveLabel {
         display: none !important;
     }
 
-    /* Header Styles */
+    /* 4. Header Styling */
     header {
         border-bottom: 2px solid #000;
         padding-bottom: 20px;
@@ -175,17 +175,17 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
         display: flex !important;
     }
 
-    /* FIX: FORCE SIDE-BY-SIDE LAYOUT */
+    /* 5. FIX: FORCE SIDE-BY-SIDE LAYOUT */
     .main-split {
         display: flex !important;
-        flex-direction: row !important; 
-        flex-wrap: nowrap !important;
+        flex-direction: row !important; /* Keep Row Layout */
+        flex-wrap: nowrap !important; /* Prevent Stacking */
         width: 100%;
         gap: 10px !important;
     }
 
     .panel {
-        flex: 1 !important;
+        flex: 1 !important; /* Share space equally */
         width: 50% !important;
         box-shadow: none !important;
         border: 1px solid #ccc !important;
@@ -194,30 +194,42 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
         break-inside: avoid;
     }
 
-    /* FIX: FORCE WIDER COLUMNS FOR PRINT READABILITY */
-    /* Income Table Columns: Date(130) | Prod(2fr) | Det(1.5fr) | Amt(140) | Del(30) */
+    /* 6. FIX: COLUMN WIDTHS FOR READABILITY */
+    /* Income: Date(130) | Prod(2fr) | Det(1fr) | Amt(140) | Del(30) */
     #incomeEntries .table-header,
     #incomeEntries .entry-row {
         grid-template-columns: 130px 2fr 1fr 140px 30px !important; 
     }
 
-    /* Expense Table Columns: Date(130) | Head(1fr) | Amt(140) | Del(30) */
+    /* Expenses: Date(130) | Head(1fr) | Amt(140) | Del(30) */
     #expenseEntries .table-header,
     #expenseEntries .entry-row {
         grid-template-columns: 130px 1fr 140px 30px !important;
     }
 
-    /* Input Styles for Print */
+    /* 7. FIX: ROW HEIGHT TO MATCH SCREEN */
+    .table-header {
+        padding: 12px 16px !important;
+        min-height: 42px !important;
+        align-items: center !important;
+    }
+    .entry-row {
+        padding: 10px 16px !important;
+        min-height: 42px !important;
+        align-items: center !important;
+    }
+
+    /* 8. Input & Text Styling */
     input, .bs-input-plain {
         border: none !important;
         background: transparent !important;
         color: black !important;
         padding: 0 !important;
         text-align: left !important;
-        font-size: 12pt !important; /* Larger font for print */
+        font-size: 12pt !important;
     }
 
-    /* Text Colors */
+    /* 9. Text Colors */
     :root {
         --text-primary: #000000;
         --text-secondary: #444444;
@@ -234,24 +246,19 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
         margin-bottom: 20px;
     }
     
-    /* Table Header Styling */
+    /* 10. Table Styling */
     .table-header {
         color: black !important;
         border-bottom: 2px solid black;
         background: #f9f9f9 !important;
     }
+    .table-header span { color: black !important; }
 
-    .table-header span {
-        color: black !important;
-    }
-
-    /* Table Row Styling */
     .entry-row {
         border-bottom: 1px solid #ddd !important;
         color: black !important;
     }
     
-    /* Date Specifics */
     .entry-row input[type="date"] {
         color: black !important;
     }
