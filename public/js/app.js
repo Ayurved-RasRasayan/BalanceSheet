@@ -62,6 +62,9 @@ const state = {
     orderData: []
 };
 
+// Variable to hold the Auto-Sync Timer
+let autoSyncInterval = null;
+
 // ============================================================
 // UTILITIES
 // ============================================================
@@ -151,6 +154,30 @@ async function manualSync() {
 }
 
 // ============================================================
+// AUTO SYNC TOGGLE LOGIC
+// ============================================================
+function toggleAutoSync(isEnabled) {
+    if (isEnabled) {
+        // Clear any existing interval to prevent duplicates
+        if (autoSyncInterval) clearInterval(autoSyncInterval);
+
+        // Sync immediately when turned on
+        autoSyncOrders();
+
+        // Start the 5 minute (300,000 ms) timer
+        autoSyncInterval = setInterval(autoSyncOrders, 300000);
+        showToast('Auto-sync enabled (Every 5 min)', 'success');
+    } else {
+        // Stop the timer
+        if (autoSyncInterval) {
+            clearInterval(autoSyncInterval);
+            autoSyncInterval = null;
+        }
+        showToast('Auto-sync disabled', 'info');
+    }
+}
+
+// ============================================================
 // RENDERING (TABLE VIEW)
 // ============================================================
 function renderMonthLabel() { document.getElementById('monthLabel').textContent = getMonthLabel(); }
@@ -233,17 +260,12 @@ function renderExpenseEntries() {
 // ACTIONS & SAVE
 // ============================================================
 async function addIncomeEntry() {
-    // 1. Create a blank entry in DB with today's date
     const newEntry = await DB.insertOne('income', { date: todayStr(), product: '', form: '', qtyUnit: '', amount: 0 });
     if (newEntry) {
-        // 2. Update local state
         state.incomeData.push(newEntry);
-        // 3. Re-render table
         renderIncomeEntries();
-        // 4. Update totals
         updateSummary();
         
-        // 5. Focus on the new product input immediately
         setTimeout(() => {
             const inputs = document.querySelectorAll('#incomeEntries input[data-field="product"]');
             if (inputs.length > 0) inputs[inputs.length - 1].focus();
@@ -283,7 +305,6 @@ async function deleteEntry(type, id) {
     }
 }
 
-// Debounced Auto-Save
 function debounceSave() {
     const dot = document.getElementById('saveDot');
     const label = document.getElementById('saveLabel');
@@ -296,7 +317,7 @@ function debounceSave() {
 }
 
 async function performSave() {
-    // 1. Gather Income Data
+    // Save Income
     const rows = document.querySelectorAll('#incomeEntries .entry-row');
     const incomes = [];
     rows.forEach(row => {
@@ -307,7 +328,7 @@ async function performSave() {
         incomes.push({ _id: id, date, product, amount });
     });
 
-    // 2. Gather Expense Data
+    // Save Expenses
     const expenseRows = document.querySelectorAll('#expenseEntries .entry-row');
     const expenses = [];
     expenseRows.forEach(row => {
@@ -318,11 +339,9 @@ async function performSave() {
         expenses.push({ _id: id, date, head, amount });
     });
 
-    // 3. Send to Server
     const incSuccess = await DB.saveAll('income', incomes);
     const expSuccess = await DB.saveAll('expenses', expenses);
 
-    // 4. Update UI Status
     const dot = document.getElementById('saveDot');
     const label = document.getElementById('saveLabel');
     
@@ -336,7 +355,6 @@ async function performSave() {
         label.style.color = 'var(--expense)';
     }
     
-    // Reset status after 3 seconds
     setTimeout(() => { 
         dot.className = 'save-dot'; 
         label.style.color = 'var(--text-muted)'; 
@@ -386,20 +404,15 @@ function showToast(msg, type='info') {
 async function init() {
     renderMonthLabel();
     try {
-        // Load Data
         state.incomeData = await DB.find('income');
         state.expenseData = await DB.find('expenses');
         
-        // Initial Sync
         await autoSyncOrders();
         
-        // Render Views
         renderIncomeEntries();
         renderExpenseEntries();
         updateSummary();
         
-        // Attach Auto-Save Listeners to the CONTAINERS
-        // This ensures even NEW rows added later trigger the save
         document.getElementById('incomeEntries').addEventListener('input', () => { updateSummary(); debounceSave(); });
         document.getElementById('expenseEntries').addEventListener('input', () => { updateSummary(); debounceSave(); });
         
@@ -410,5 +423,4 @@ async function init() {
     }
 }
 
-// Start
 init();
