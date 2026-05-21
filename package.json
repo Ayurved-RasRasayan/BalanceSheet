@@ -1,2 +1,17 @@
-one 
-two
+{
+  "name": "balance-sheet-manager",
+  "version": "1.0.0",
+  "description": "A web-based balance sheet manager with MongoDB integration and auto-save",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "mongoose": "^7.6.3"
+  }
+}
