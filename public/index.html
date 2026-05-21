@@ -30,7 +30,7 @@
 <body>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
 
-        <!-- Header -->
+        <!-- GLOBAL HEADER -->
         <header class="flex flex-wrap items-center justify-between gap-4 mb-8">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--income-soft);">
@@ -50,7 +50,7 @@
                     <button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-[var(--bg-primary)] transition" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right text-xs" style="color:var(--text-secondary)"></i></button>
                 </div>
 
-                <!-- Manual Sync Button -->
+                <!-- Sync Button -->
                 <button id="syncBtn" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all hover:brightness-110"
                     style="background:var(--income-soft);border:1px solid rgba(16,185,129,0.2);color:var(--income);"
                     onclick="manualSync()">
@@ -72,7 +72,7 @@
             </div>
         </header>
 
-        <!-- Summary Cards -->
+        <!-- SUMMARY CARDS -->
         <div class="summary-grid grid grid-cols-3 gap-4 mb-8">
             <div class="summary-card">
                 <div class="accent-bar" style="background:var(--income)"></div>
@@ -91,27 +91,19 @@
             </div>
         </div>
 
-        <!-- Main Panel -->
-        <div class="panel">
-            <!-- Panel Header with Add Buttons -->
-            <div class="panel-header">
-                <h2 class="text-sm font-bold font-display" style="color:var(--text-primary)">ENTRIES</h2>
-                
-                <div class="flex gap-2">
+        <!-- MAIN CONTENT: SPLIT VIEW WITH SPECIFIC HEADERS -->
+        <div class="flex main-split" style="min-height: 500px; gap: 20px;">
+            
+            <!-- INCOME PANEL -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="text-sm font-bold font-display" style="color:var(--text-primary)">INCOME</h2>
                     <button onclick="addIncomeEntry()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition hover:brightness-110"
                         style="background:var(--income-soft);color:var(--income);border:1px solid rgba(16,185,129,0.15);">
                         <i class="fa-solid fa-plus text-[10px]"></i> Income
                     </button>
-                    <button onclick="addExpenseEntry()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition hover:brightness-110"
-                        style="background:var(--expense-soft);color:var(--expense);border:1px solid rgba(244,63,94,0.15);">
-                        <i class="fa-solid fa-plus text-[10px]"></i> Expense
-                    </button>
                 </div>
-            </div>
 
-            <div class="flex main-split" style="min-height: 500px;">
-                
-                <!-- INCOME SIDE -->
                 <div class="split-col">
                     <!-- JS Injects Table Here -->
                     <div id="incomeEntries"></div>
@@ -121,21 +113,29 @@
                         <span id="incomeTotalInline" class="text-sm font-bold font-display" style="color:var(--income)">NPR 0</span>
                     </div>
                 </div>
+            </div>
 
-                                <!-- EXPENSE SIDE -->
-                <div class="col-divider"></div>
+            <!-- EXPENSES PANEL -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="text-sm font-bold font-display" style="color:var(--text-primary)">EXPENSES</h2>
+                    <button onclick="addExpenseEntry()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition hover:brightness-110"
+                        style="background:var(--expense-soft);color:var(--expense);border:1px solid rgba(244,63,94,0.15);">
+                        <i class="fa-solid fa-plus text-[10px]"></i> Expense
+                    </button>
+                </div>
+
                 <div class="split-col">
                     <!-- JS Injects Table Here -->
                     <div id="expenseEntries"></div>
                     
-                    <!-- CORRECTED FOOTER: Removed empty spans to align Left/Right exactly like Income -->
                     <div class="px-5 py-3 items-center flex justify-between" style="border-top: 2px solid var(--border); background:rgba(244,63,94,0.03);">
                         <span class="text-xs font-bold tracking-wider" style="color:var(--text-muted)">TOTAL</span>
                         <span id="expenseTotalInline" class="text-sm font-bold font-display text-right" style="color:var(--expense)">NPR 0</span>
                     </div>
                 </div>
-
             </div>
+
         </div>
 
     </div>
