@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balance Sheet Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['Space Grotesk', 'sans-serif'],
+                        body: ['DM Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@200;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #080a10;
+            --bg-primary: #0c0f18;
+            --bg-card: #121622;
+            --bg-input: #0a0d15;
+            --border: #1f2437;
+            --border-light: #2a3050;
+            --text-primary: #e4e7f0;
+            --text-secondary: #8890ab;
+            --text-muted: #4e5573;
+            --income: #10b981;
+            --income-soft: rgba(16,185,129,0.10);
+            --income-glow: rgba(16,185,129,0.25);
+            --expense: #f43f5e;
+            --expense-soft: rgba(244,63,94,0.10);
+            --expense-glow: rgba(244,63,94,0.25);
+            --balance: #f59e0b;
+            --balance-soft: rgba(245,158,11,0.10);
+            --balance-glow: rgba(245,158,11,0.25);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        /* Background effects */
+        .bg-grid {
+            background-image:
+                linear-gradient(rgba(31,36,55,0.25) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(31,36,55,0.25) 1px, transparent 1px);
+            background-size: 48px 48px;
+        }
+        .bg-blob {
+            position: fixed; border-radius: 50%; filter: blur(120px);
+            pointer-events: none; z-index: 0;
+        }
+
+        /* Inputs */
+        .bs-input {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 7px 10px;
+            border-radius: 6px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            width: 100%;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .bs-input:focus {
+            outline: none;
+            border-color: var(--income);
+            box-shadow: 0 0 0 2px var(--income-soft);
+        }
+        .bs-input.expense-input:focus {
+            border-color: var(--expense);
+            box-shadow: 0 0 0 2px var(--expense-soft);
+        }
+        .bs-input::placeholder { color: var(--text-muted); font-size: 12px; }
+        .bs-input[type="number"] { text-align: right; font-variant-numeric: tabular-nums; }
+        .bs-input[type="date"] { font-size: 12px; }
+        .bs-input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.6); cursor: pointer; }
+
+        /* Entry rows */
+        .entry-row {
+            animation: rowIn 0.35s cubic-bezier(0.16,1,0.3,1) forwards;
+        }
+        @keyframes rowIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .entry-row.removing {
+            animation: rowOut 0.25s ease forwards;
+        }
+        @keyframes rowOut {
+            to { opacity: 0; transform: translateX(30px) scale(0.95); }
+        }
+        .delete-btn {
+            opacity: 0; transition: opacity 0.2s, transform 0.15s, color 0.15s;
+            cursor: pointer;
+        }
+        .entry-row:hover .delete-btn { opacity: 1; }
+        .delete-btn:hover { transform: scale(1.15); color: var(--expense); }
+
+        /* Cards */
+        .summary-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 24px;
+            background: var(--bg-card);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.3s;
+        }
+        .summary-card:hover {
+            transform: translateY(-2px);
+        }
+        .summary-card .accent-bar {
+            position: absolute; top: 0; left: 0; right: 0; height: 2px;
+        }
+
+        /* Panel */
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .panel-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed; bottom: 20px; right: 20px; z-index: 9999;
+            display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+        }
+        .toast {
+            padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 500;
+            display: flex; align-items: center; gap: 8px;
+            transform: translateX(120%); opacity: 0;
+            transition: all 0.35s cubic-bezier(0.16,1,0.3,1);
+            pointer-events: auto;
+            backdrop-filter: blur(12px);
+        }
+        .toast.show { transform: translateX(0); opacity: 1; }
+        .toast.success { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.25); color: #34d399; }
+        .toast.info { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.25); color: #60a5fa; }
+        .toast.warning { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.25); color: #fbbf24; }
+
+        /* Save indicator */
+        .save-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--text-muted);
+            transition: background 0.3s;
+        }
+        .save-dot.saving { background: var(--balance); animation: pulseDot 0.8s ease infinite; }
+        .save-dot.saved { background: var(--income); }
+        @keyframes pulseDot { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+        /* Month nav */
+        .month-nav-btn {
+            width: 32px; height: 32px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid var(--border); background: var(--bg-card);
+            color: var(--text-secondary); cursor: pointer;
+            transition: all 0.2s;
+        }
+        .month-nav-btn:hover {
+            border-color: var(--border-light); color: var(--text-primary);
+            background: var(--bg-primary);
+        }
+
+        /* Sync button */
+        .sync-btn {
+            position: relative; overflow: hidden;
+        }
+        .sync-btn .ripple {
+            position: absolute; border-radius: 50%; background: rgba(255,255,255,0.15);
+            transform: scale(0); animation: ripple 0.5s ease-out;
+        }
+        @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+
+        /* Order badge */
+        .order-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: var(--income-soft); color: var(--income);
+            font-size: 10px; font-weight: 600; padding: 2px 7px;
+            border-radius: 4px; letter-spacing: 0.5px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            padding: 40px 20px; text-align: center; color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .panels-grid { grid-template-columns: 1fr !important; }
+            .summary-grid { grid-template-columns: 1fr !important; }
+            .delete-btn { opacity: 0.7; }
+        }
+        @media (max-width: 500px) {
+            .entry-row { font-size: 12px; }
+            .bs-input { padding: 6px 8px; font-size: 12px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-grid">
+
+    <!-- Background blobs -->
+    <div class="bg-blob" style="width:500px;height:500px;background:var(--income);top:-100px;left:-100px;"></div>
+    <div class="bg-blob" style="width:400px;height:400px;background:var(--expense);bottom:-80px;right:-80px;"></div>
+    <div class="bg-blob" style="width:300px;height:300px;background:var(--balance);top:40%;left:50%;"></div>
+
+    <!-- Main container -->
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-6">
+
+        <!-- Header -->
+        <header class="flex flex-wrap items-center justify-between gap-4 mb-8">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background: var(--income-soft); border: 1px solid rgba(16,185,129,0.2);">
+                    <i class="fa-solid fa-scale-balanced text-sm" style="color:var(--income)"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight" style="color:var(--text-primary)">Balance Sheet</h1>
+                    <p class="text-xs" style="color:var(--text-muted)">Financial tracker with auto-save</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 flex-wrap">
+                <!-- Month Navigator -->
+                <div class="flex items-center gap-1 px-2 py-1 rounded-lg" style="background:var(--bg-card);border:1px solid var(--border);">
+                    <button class="month-nav-btn" onclick="changeMonth(-1)" aria-label="Previous month">
+                        <i class="fa-solid fa-chevron-left text-xs"></i>
+                    </button>
+                    <span id="monthLabel" class="px-3 text-sm font-medium font-display" style="color:var(--text-primary);min-width:120px;text-align:center;"></span>
+                    <button class="month-nav-btn" onclick="changeMonth(1)" aria-label="Next month">
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </button>
+                </div>
+
+                <!-- Sync Orders Button -->
+                <button id="syncBtn" class="sync-btn flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all hover:brightness-110"
+                    style="background:var(--income-soft);border:1px solid rgba(16,185,129,0.2);color:var(--income);"
+                    onclick="syncOrders()">
+                    <i class="fa-solid fa-arrows-rotate text-xs"></i>
+                    <span>Sync Orders</span>
+                </button>
+
+                <!-- Save Indicator -->
+                <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs" style="background:var(--bg-card);border:1px solid var(--border);">
+                    <div id="saveDot" class="save-dot saved"></div>
+                    <span id="saveLabel" style="color:var(--text-muted)">All saved</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Summary Cards -->
+        <div class="summary-grid grid grid-cols-3 gap-4 mb-8" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="summary-card" id="incomeCard">
+                <div class="accent-bar" style="background:linear-gradient(90deg,var(--income),transparent)"></div>
+                <p class="text-xs font-medium mb-1" style="color:var(--text-muted)">TOTAL INCOME</p>
+                <p id="totalIncome" class="text-2xl font-bold font-display" style="color:var(--income)">$0.00</p>
+                <p id="incomeCount" class="text-xs mt-2" style="color:var(--text-muted)">0 entries</p>
+            </div>
+            <div class="summary-card" id="expenseCard">
+                <div class="accent-bar" style="background:linear-gradient(90deg,var(--expense),transparent)"></div>
+                <p class="text-xs font-medium mb-1" style="color:var(--text-muted)">TOTAL EXPENSES</p>
+                <p id="totalExpense" class="text-2xl font-bold font-display" style="color:var(--expense)">$0.00</p>
+                <p id="expenseCount" class="text-xs mt-2" style="color:var(--text-muted)">0 entries</p>
+            </div>
+            <div class="summary-card" id="balanceCard">
+                <div class="accent-bar" style="background:linear-gradient(90deg,var(--balance),transparent)"></div>
+                <p class="text-xs font-medium mb-1" style="color:var(--text-muted)">NET BALANCE</p>
+                <p id="netBalance" class="text-2xl font-bold font-display" style="color:var(--balance)">$0.00</p>
+                <p id="balanceLabel" class="text-xs mt-2" style="color:var(--text-muted)">Income - Expenses</p>
+            </div>
+        </div>
+
+        <!-- Main Panels -->
+        <div class="panels-grid grid gap-6" style="grid-template-columns: 1fr 1fr;">
+
+            <!-- Income Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="flex items-center gap-2">
+                        <div class="w-2.5 h-2.5 rounded-full" style="background:var(--income)"></div>
+                        <h2 class="text-sm font-bold font-display tracking-wide" style="color:var(--text-primary)">INCOME</h2>
+                    </div>
+                    <button onclick="addIncomeEntry()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all hover:brightness-110"
+                        style="background:var(--income-soft);color:var(--income);border:1px solid rgba(16,185,129,0.15);">
+                        <i class="fa-solid fa-plus text-[10px]"></i> Add Entry
+                    </button>
+                </div>
+
+                <!-- Column headers -->
+                <div class="grid gap-2 px-5 py-2.5 text-[10px] font-semibold tracking-widest" style="grid-template-columns: 110px 1fr 120px 32px; color:var(--text-muted); border-bottom:1px solid var(--border); background:rgba(0,0,0,0.15);">
+                    <span>DATE</span>
+                    <span>HEAD / ORDER</span>
+                    <span class="text-right">AMOUNT</span>
+                    <span></span>
+                </div>
+
+                <!-- Income entries -->
+                <div id="incomeEntries" class="divide-y" style="border-color:var(--border); max-height: 420px; overflow-y: auto;">
+                    <!-- Rendered by JS -->
+                </div>
+
+                <!-- Income Total Footer -->
+                <div class="grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 110px 1fr 120px 32px; border-top: 2px solid var(--border); background:rgba(16,185,129,0.03);">
+                    <span></span>
+                    <span class="text-xs font-bold tracking-wider" style="color:var(--text-muted)">TOTAL</span>
+                    <span id="incomeTotalInline" class="text-sm font-bold font-display text-right" style="color:var(--income)">$0.00</span>
+                    <span></span>
+                </div>
+            </div>
+
+            <!-- Expense Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="flex items-center gap-2">
+                        <div class="w-2.5 h-2.5 rounded-full" style="background:var(--expense)"></div>
+                        <h2 class="text-sm font-bold font-display tracking-wide" style="color:var(--text-primary)">EXPENSES</h2>
+                    </div>
+                    <button onclick="addExpenseEntry()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all hover:brightness-110"
+                        style="background:var(--expense-soft);color:var(--expense);border:1px solid rgba(244,63,94,0.15);">
+                        <i class="fa-solid fa-plus text-[10px]"></i> Add Entry
+                    </button>
+                </div>
+
+                <!-- Column headers -->
+                <div class="grid gap-2 px-5 py-2.5 text-[10px] font-semibold tracking-widest" style="grid-template-columns: 110px 1fr 120px 32px; color:var(--text-muted); border-bottom:1px solid var(--border); background:rgba(0,0,0,0.15);">
+                    <span>DATE</span>
+                    <span>HEAD</span>
+                    <span class="text-right">AMOUNT</span>
+                    <span></span>
+                </div>
+
+                <!-- Expense entries -->
+                <div id="expenseEntries" class="divide-y" style="border-color:var(--border); max-height: 420px; overflow-y: auto;">
+                    <!-- Rendered by JS -->
+                </div>
+
+                <!-- Expense Total Footer -->
+                <div class="grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 110px 1fr 120px 32px; border-top: 2px solid var(--border); background:rgba(244,63,94,0.03);">
+                    <span></span>
+                    <span class="text-xs font-bold tracking-wider" style="color:var(--text-muted)">TOTAL</span>
+                    <span id="expenseTotalInline" class="text-sm font-bold font-display text-right" style="color:var(--expense)">$0.00</span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MongoDB Info Banner -->
+        <div class="mt-6 p-4 rounded-xl flex items-start gap-3" style="background:var(--bg-card);border:1px solid var(--border);">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:rgba(78,85,115,0.2);">
+                <i class="fa-solid fa-database text-xs" style="color:var(--text-muted)"></i>
+            </div>
+            <div>
+                <p class="text-xs font-semibold mb-0.5" style="color:var(--text-secondary)">MongoDB Simulation Active</p>
+                <p class="text-[11px] leading-relaxed" style="color:var(--text-muted)">
+                    Data is persisted in localStorage simulating MongoDB collections. To connect to a real MongoDB instance,
+                    replace the <code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;font-size:10px;">DB</code> service methods
+                    with MongoDB Atlas Data API calls or your backend API endpoints. All CRUD operations follow MongoDB patterns.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+    // ============================================================
+    // DATABASE SERVICE — MongoDB Simulation Layer
+    // ============================================================
+    // Simulates MongoDB collections using localStorage.
+    // Replace these methods with real MongoDB Atlas Data API calls
+    // or Express.js backend endpoints for production use.
+    //
+    // Example MongoDB Atlas Data API:
+    // POST https://data.mongodb-api.com/app/data-xxxx/endpoint/data/v1/action/find
+    // POST https://data.mongodb-api.com/app/data-xxxx/endpoint/data/v1/action/insertOne
+    // POST https://data.mongodb-api.com/app/data-xxxx/endpoint/data/v1/action/updateOne
+    // POST https://data.mongodb-api.com/app/data-xxxx/endpoint/data/v1/action/deleteOne
+    // ============================================================
+
+    const DB_NAME = 'balancesheet_db';
+
+    const DB = {
+        // Fetch all documents from a collection
+        find(collection) {
+            try {
+                const raw = localStorage.getItem(`${DB_NAME}.${collection}`);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                console.error(`DB.find error [${collection}]:`, e);
+                return [];
+            }
+        },
+
+        // Replace entire collection (used for bulk saves)
+        saveAll(collection, docs) {
+            try {
+                localStorage.setItem(`${DB_NAME}.${collection}`, JSON.stringify(docs));
+                return true;
+            } catch (e) {
+                console.error(`DB.saveAll error [${collection}]:`, e);
+                return false;
+            }
+        },
+
+        // Insert one document
+        insertOne(collection, doc) {
+            const docs = this.find(collection);
+            doc._id = doc._id || this.generateId();
+            doc.createdAt = doc.createdAt || new Date().toISOString();
+            doc.updatedAt = new Date().toISOString();
+            docs.push(doc);
+            this.saveAll(collection, docs);
+            return doc;
+        },
+
+        // Update one document by _id
+        updateOne(collection, id, updates) {
+            const docs = this.find(collection);
+            const idx = docs.findIndex(d => d._id === id);
+            if (idx !== -1) {
+                docs[idx] = { ...docs[idx], ...updates, updatedAt: new Date().toISOString() };
+                this.saveAll(collection, docs);
+                return docs[idx];
+            }
+            return null;
+        },
+
+        // Delete one document by _id
+        deleteOne(collection, id) {
+            let docs = this.find(collection);
+            docs = docs.filter(d => d._id !== id);
+            this.saveAll(collection, docs);
+        },
+
+        // Generate a MongoDB-like ObjectId
+        generateId() {
+            const timestamp = Math.floor(Date.now() / 1000).toString(16);
+            const random = Array.from({ length: 16 }, () =>
+                Math.floor(Math.random() * 16).toString(16)
+            ).join('');
+            return timestamp + random;
+        }
+    };
+
+
+    // ============================================================
+    // SAMPLE DATA SEEDER
+    // ============================================================
+
+    function seedIfEmpty() {
+        // Seed orders collection (simulating MongoDB "orders" table)
+        if (DB.find('orders').length === 0) {
+            const sampleOrders = [
+                { _id: DB.generateId(), orderNo: 'ORD-2024-001', date: '2024-12-02', customer: 'Acme Corporation', amount: 12500, status: 'completed' },
+                { _id: DB.generateId(), orderNo: 'ORD-2024-002', date: '2024-12-04', customer: 'TechStart LLC', amount: 8750, status: 'completed' },
+                { _id: DB.generateId(), orderNo: 'ORD-2024-003', date: '2024-12-07', customer: 'Global Industries', amount: 24000, status: 'completed' },
+                { _id: DB.generateId(), orderNo: 'ORD-2024-004', date: '2024-12-09', customer: 'Metro Services Inc', amount: 5600, status: 'completed' },
+                { _id: DB.generateId(), orderNo: 'ORD-2024-005', date: '2024-12-11', customer: 'Sunrise Trading Co', amount: 15200, status: 'completed' },
+                { _id: DB.generateId(), orderNo: 'ORD-2024-006', date: '2024-12-14', customer: 'Digital Wave Systems', amount: 9800, status: 'pending' },
+                { _id: DB.generateId(), orderNo: 'ORD-2024-007', date: '2024-12-16', customer: 'Prime Solutions Ltd', amount: 18300, status: 'completed' },
+                { _id: DB.generateId(), orderNo: 'ORD-2024-008', date: '2024-12-18', customer: 'Oakwood Enterprises', amount: 6400, status: 'completed' },
+                { _id: DB.generateId(), orderNo: 'ORD-2024-009', date: '2024-12-20', customer: 'Zenith Dynamics', amount: 31200, status: 'completed' },
+                { _id: DB.generateId(), orderNo: 'ORD-2024-010', date: '2024-12-23', customer: 'Apex Innovations', amount: 11500, status: 'pending' },
+                { _id: DB.generateId(), orderNo: 'ORD-2025-001', date: '2025-01-03', customer: 'Pinnacle Group', amount: 19800, status: 'completed' },
+                { _id: DB.generateId(), orderNo: 'ORD-2025-002', date: '2025-01-06', customer: 'Sterling & Co', amount: 7600, status: 'completed' },
+                { _id: DB.generateId(), orderNo: 'ORD-2025-003', date: '2025-01-10', customer: 'Redwood Partners', amount: 22100, status: 'pending' },
+            ];
+            DB.saveAll('orders', sampleOrders);
+        }
+
+        // Seed some expense categories
+        if (DB.find('expenses').length === 0) {
+            const sampleExpenses = [
+                { _id: DB.generateId(), date: '2024-12-01', head: 'Office Rent', amount: 5000, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+                { _id: DB.generateId(), date: '2024-12-05', head: 'Utilities & Internet', amount: 1200, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+                { _id: DB.generateId(), date: '2024-12-10', head: 'Staff Salaries', amount: 15000, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+                { _id: DB.generateId(), date: '2024-12-15', head: 'Transportation', amount: 2300, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+                { _id: DB.generateId(), date: '2024-12-20', head: 'Office Supplies', amount: 850, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+            ];
+            DB.saveAll('expenses', sampleExpenses);
+        }
+    }
+
+
+    // ============================================================
+    // APPLICATION STATE
+    // ============================================================
+
+    const state = {
+        currentYear: new Date().getFullYear(),
+        currentMonth: new Date().getMonth(), // 0-indexed
+        saveTimeout: null,
+        isSaving: false,
+    };
+
+
+    // ============================================================
+    // UTILITY FUNCTIONS
+    // ============================================================
+
+    function formatCurrency(amount) {
+        const num = parseFloat(amount) || 0;
+        return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function getMonthKey() {
+        return `${state.currentYear}-${String(state.currentMonth + 1).padStart(2, '0')}`;
+    }
+
+    function getMonthLabel() {
+        const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        return `${months[state.currentMonth]} ${state.currentYear}`;
+    }
+
+    function isDateInMonth(dateStr) {
+        if (!dateStr) return false;
+        const d = new Date(dateStr);
+        return d.getFullYear() === state.currentYear && d.getMonth() === state.currentMonth;
+    }
+
+    function todayStr() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+
+    // ============================================================
+    // AUTO-SAVE WITH DEBOUNCE
+    // ============================================================
+
+    function debounceSave() {
+        // Show saving indicator
+        const dot = document.getElementById('saveDot');
+        const label = document.getElementById('saveLabel');
+        dot.className = 'save-dot saving';
+        label.textContent = 'Saving...';
+        label.style.color = 'var(--balance)';
+
+        clearTimeout(state.saveTimeout);
+        state.saveTimeout = setTimeout(() => {
+            performSave();
+        }, 600);
+    }
+
+    function performSave() {
+        // Collect current income entries from DOM
+        const incomeRows = document.querySelectorAll('#incomeEntries .entry-row');
+        const incomes = [];
+        incomeRows.forEach(row => {
+            const id = row.dataset.entryId;
+            const dateInput = row.querySelector('[data-field="date"]');
+            const headInput = row.querySelector('[data-field="head"]');
+            const amountInput = row.querySelector('[data-field="amount"]');
+            const orderId = row.dataset.orderId || '';
+
+            incomes.push({
+                _id: id,
+                date: dateInput ? dateInput.value : '',
+                head: headInput ? headInput.value : '',
+                amount: parseFloat(amountInput ? amountInput.value : 0) || 0,
+                orderId: orderId,
+                updatedAt: new Date().toISOString()
+            });
+        });
+        DB.saveAll('income', incomes);
+
+        // Collect current expense entries from DOM
+        const expenseRows = document.querySelectorAll('#expenseEntries .entry-row');
+        const expenses = [];
+        expenseRows.forEach(row => {
+            const id = row.dataset.entryId;
+            const dateInput = row.querySelector('[data-field="date"]');
+            const headInput = row.querySelector('[data-field="head"]');
+            const amountInput = row.querySelector('[data-field="amount"]');
+
+            expenses.push({
+                _id: id,
+                date: dateInput ? dateInput.value : '',
+                head: headInput ? headInput.value : '',
+                amount: parseFloat(amountInput ? amountInput.value : 0) || 0,
+                updatedAt: new Date().toISOString()
+            });
+        });
+        DB.saveAll('expenses', expenses);
+
+        // Show saved indicator
+        const dot = document.getElementById('saveDot');
+        const label = document.getElementById('saveLabel');
+        dot.className = 'save-dot saved';
+        label.textContent = 'All saved';
+        label.style.color = 'var(--income)';
+
+        // Reset indicator after 3 seconds
+        setTimeout(() => {
+            dot.className = 'save-dot';
+            label.style.color = 'var(--text-muted)';
+        }, 3000);
+    }
+
+
+    // ============================================================
+    // DATA OPERATIONS
+    // ============================================================
+
+    function getFilteredIncome() {
+        return DB.find('income').filter(e => isDateInMonth(e.date));
+    }
+
+    function getFilteredExpenses() {
+        return DB.find('expenses').filter(e => isDateInMonth(e.date));
+    }
+
+    function syncOrders() {
+        const btn = document.getElementById('syncBtn');
+        btn.style.pointerEvents = 'none';
+
+        // Add spin animation to icon
+        const icon = btn.querySelector('i');
+        icon.style.animation = 'spin 0.6s linear';
+
+        setTimeout(() => {
+            const allOrders = DB.find('orders');
+            const existingIncome = DB.find('income');
+            const existingOrderIds = new Set(existingIncome.filter(e => e.orderId).map(e => e.orderId));
+
+            // Find orders not yet in income
+            const newOrders = allOrders.filter(o => !existingOrderIds.has(o.orderNo));
+
+            if (newOrders.length === 0) {
+                showToast('All orders are already synced', 'info');
+            } else {
+                // Add new orders as income entries
+                newOrders.forEach(order => {
+                    DB.insertOne('income', {
+                        date: order.date,
+                        head: `${order.orderNo} — ${order.customer}`,
+                        amount: order.amount,
+                        orderId: order.orderNo
+                    });
+                });
+                showToast(`${newOrders.length} order(s) synced to income`, 'success');
+            }
+
+            // Re-render
+            renderIncomeEntries();
+            updateSummary();
+
+            icon.style.animation = '';
+            btn.style.pointerEvents = '';
+        }, 500);
+    }
+
+    function addIncomeEntry() {
+        const newEntry = DB.insertOne('income', {
+            date: todayStr(),
+            head: '',
+            amount: 0,
+            orderId: ''
+        });
+        renderIncomeEntries();
+        updateSummary();
+
+        // Focus the head input of the new row
+        setTimeout(() => {
+            const row = document.querySelector(`[data-entry-id="${newEntry._id}"]`);
+            if (row) {
+                const headInput = row.querySelector('[data-field="head"]');
+                if (headInput) headInput.focus();
+            }
+        }, 50);
+    }
+
+    function addExpenseEntry() {
+        const newEntry = DB.insertOne('expenses', {
+            date: todayStr(),
+            head: '',
+            amount: 0
+        });
+        renderExpenseEntries();
+        updateSummary();
+
+        setTimeout(() => {
+            const row = document.querySelector(`[data-entry-id="${newEntry._id}"]`);
+            if (row) {
+                const headInput = row.querySelector('[data-field="head"]');
+                if (headInput) headInput.focus();
+            }
+        }, 50);
+    }
+
+    function deleteEntry(type, id) {
+        const row = document.querySelector(`[data-entry-id="${id}"]`);
+        if (row) {
+            row.classList.add('removing');
+            setTimeout(() => {
+                DB.deleteOne(type === 'income' ? 'income' : 'expenses', id);
+                if (type === 'income') renderIncomeEntries();
+                else renderExpenseEntries();
+                updateSummary();
+                showToast('Entry deleted', 'warning');
+            }, 250);
+        }
+    }
+
+
+    // ============================================================
+    // UI RENDERING
+    // ============================================================
+
+    function renderMonthLabel() {
+        document.getElementById('monthLabel').textContent = getMonthLabel();
+    }
+
+    function renderIncomeEntries() {
+        const container = document.getElementById('incomeEntries');
+        const entries = getFilteredIncome();
+
+        if (entries.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fa-solid fa-inbox text-2xl mb-2" style="color:var(--border-light)"></i>
+                    <p class="text-xs" style="color:var(--text-muted)">No income entries this month</p>
+                    <p class="text-[10px] mt-1" style="color:var(--text-muted)">Add entries manually or sync orders</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = entries.map(entry => `
+            <div class="entry-row grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 110px 1fr 120px 32px; border-bottom: 1px solid var(--border);" data-entry-id="${entry._id}" data-order-id="${entry.orderId || ''}">
+                <input type="date" class="bs-input" data-field="date" value="${entry.date || ''}" aria-label="Date">
+                <div class="flex items-center gap-2">
+                    ${entry.orderId ? '<span class="order-badge">ORD</span>' : ''}
+                    <input type="text" class="bs-input" data-field="head" value="${escapeHtml(entry.head || '')}" placeholder="Income head..." aria-label="Head">
+                </div>
+                <input type="number" class="bs-input" data-field="amount" value="${entry.amount || ''}" placeholder="0.00" step="0.01" min="0" aria-label="Amount">
+                <button class="delete-btn text-sm" style="color:var(--text-muted)" onclick="deleteEntry('income','${entry._id}')" aria-label="Delete entry">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    function renderExpenseEntries() {
+        const container = document.getElementById('expenseEntries');
+        const entries = getFilteredExpenses();
+
+        if (entries.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fa-solid fa-inbox text-2xl mb-2" style="color:var(--border-light)"></i>
+                    <p class="text-xs" style="color:var(--text-muted)">No expense entries this month</p>
+                    <p class="text-[10px] mt-1" style="color:var(--text-muted)">Click "Add Entry" to record expenses</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = entries.map(entry => `
+            <div class="entry-row grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 110px 1fr 120px 32px; border-bottom: 1px solid var(--border);" data-entry-id="${entry._id}">
+                <input type="date" class="bs-input expense-input" data-field="date" value="${entry.date || ''}" aria-label="Date">
+                <input type="text" class="bs-input expense-input" data-field="head" value="${escapeHtml(entry.head || '')}" placeholder="Expense head..." aria-label="Head">
+                <input type="number" class="bs-input expense-input" data-field="amount" value="${entry.amount || ''}" placeholder="0.00" step="0.01" min="0" aria-label="Amount">
+                <button class="delete-btn text-sm" style="color:var(--text-muted)" onclick="deleteEntry('expense','${entry._id}')" aria-label="Delete entry">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    function updateSummary() {
+        // Calculate from DOM inputs for real-time accuracy
+        let totalIncome = 0;
+        let totalExpense = 0;
+        let incomeCount = 0;
+        let expenseCount = 0;
+
+        document.querySelectorAll('#incomeEntries .entry-row').forEach(row => {
+            const amountInput = row.querySelector('[data-field="amount"]');
+            const val = parseFloat(amountInput ? amountInput.value : 0) || 0;
+            totalIncome += val;
+            incomeCount++;
+        });
+
+        document.querySelectorAll('#expenseEntries .entry-row').forEach(row => {
+            const amountInput = row.querySelector('[data-field="amount"]');
+            const val = parseFloat(amountInput ? amountInput.value : 0) || 0;
+            totalExpense += val;
+            expenseCount++;
+        });
+
+        const net = totalIncome - totalExpense;
+
+        // Animate number updates
+        animateValue('totalIncome', totalIncome);
+        animateValue('totalExpense', totalExpense);
+        animateValue('netBalance', net);
+
+        document.getElementById('incomeCount').textContent = `${incomeCount} entr${incomeCount === 1 ? 'y' : 'ies'}`;
+        document.getElementById('expenseCount').textContent = `${expenseCount} entr${expenseCount === 1 ? 'y' : 'ies'}`;
+
+        // Inline totals
+        document.getElementById('incomeTotalInline').textContent = formatCurrency(totalIncome);
+        document.getElementById('expenseTotalInline').textContent = formatCurrency(totalExpense);
+
+        // Balance color
+        const balanceEl = document.getElementById('netBalance');
+        const balanceCard = document.getElementById('balanceCard');
+        const accentBar = balanceCard.querySelector('.accent-bar');
+
+        if (net >= 0) {
+            balanceEl.style.color = 'var(--income)';
+            accentBar.style.background = 'linear-gradient(90deg,var(--income),transparent)';
+            document.getElementById('balanceLabel').textContent = 'Surplus';
+            document.getElementById('balanceLabel').style.color = 'var(--income)';
+        } else {
+            balanceEl.style.color = 'var(--expense)';
+            accentBar.style.background = 'linear-gradient(90deg,var(--expense),transparent)';
+            document.getElementById('balanceLabel').textContent = 'Deficit';
+            document.getElementById('balanceLabel').style.color = 'var(--expense)';
+        }
+    }
+
+    // Simple number display update (no complex animation to avoid layout issues)
+    function animateValue(elementId, targetValue) {
+        const el = document.getElementById(elementId);
+        el.textContent = formatCurrency(targetValue);
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+
+    // ============================================================
+    // TOAST NOTIFICATIONS
+    // ============================================================
+
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+
+        const iconMap = {
+            success: 'fa-check-circle',
+            info: 'fa-info-circle',
+            warning: 'fa-exclamation-triangle'
+        };
+
+        toast.innerHTML = `<i class="fa-solid ${iconMap[type] || iconMap.info}"></i><span>${message}</span>`;
+        container.appendChild(toast);
+
+        // Trigger animation
+        requestAnimationFrame(() => {
+            toast.classList.add('show');
+        });
+
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 350);
+        }, 3000);
+    }
+
+
+    // ============================================================
+    // MONTH NAVIGATION
+    // ============================================================
+
+    function changeMonth(delta) {
+        state.currentMonth += delta;
+        if (state.currentMonth > 11) {
+            state.currentMonth = 0;
+            state.currentYear++;
+        } else if (state.currentMonth < 0) {
+            state.currentMonth = 11;
+            state.currentYear--;
+        }
+        renderMonthLabel();
+        renderIncomeEntries();
+        renderExpenseEntries();
+        updateSummary();
+    }
+
+
+    // ============================================================
+    // EVENT HANDLING
+    // ============================================================
+
+    function setupEventDelegation() {
+        // Income entries — delegate input events
+        document.getElementById('incomeEntries').addEventListener('input', (e) => {
+            const field = e.target.dataset.field;
+            if (!field) return;
+            // Update summary in real-time as user types
+            updateSummary();
+            debounceSave();
+        });
+
+        // Expense entries — delegate input events
+        document.getElementById('expenseEntries').addEventListener('input', (e) => {
+            const field = e.target.dataset.field;
+            if (!field) return;
+            updateSummary();
+            debounceSave();
+        });
+
+        // Keyboard navigation — Enter to move to next input
+        document.getElementById('incomeEntries').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const inputs = Array.from(document.querySelectorAll('#incomeEntries .bs-input'));
+                const idx = inputs.indexOf(e.target);
+                if (idx < inputs.length - 1) {
+                    inputs[idx + 1].focus();
+                }
+            }
+        });
+
+        document.getElementById('expenseEntries').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const inputs = Array.from(document.querySelectorAll('#expenseEntries .bs-input'));
+                const idx = inputs.indexOf(e.target);
+                if (idx < inputs.length - 1) {
+                    inputs[idx + 1].focus();
+                }
+            }
+        });
+    }
+
+    // Add spin keyframe dynamically
+    function addDynamicStyles() {
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        `;
+        document.head.appendChild(style);
+    }
+
+
+    // ============================================================
+    // INITIALIZATION
+    // ============================================================
+
+    function init() {
+        addDynamicStyles();
+
+        // Seed sample data if first visit
+        seedIfEmpty();
+
+        // Auto-sync orders on first load
+        const incomeEntries = DB.find('income');
+        if (incomeEntries.length === 0) {
+            // Automatically sync orders on first load
+            const allOrders = DB.find('orders');
+            allOrders.forEach(order => {
+                DB.insertOne('income', {
+                    date: order.date,
+                    head: `${order.orderNo} — ${order.customer}`,
+                    amount: order.amount,
+                    orderId: order.orderNo
+                });
+            });
+        }
+
+        // Set current month to match available data (December 2024 has most data)
+        // Or keep as current month
+        renderMonthLabel();
+        renderIncomeEntries();
+        renderExpenseEntries();
+        updateSummary();
+        setupEventDelegation();
+
+        showToast('Balance sheet loaded', 'success');
+    }
+
+    // Start the application
+    init();
+    </script>
+</body>
+</html>
