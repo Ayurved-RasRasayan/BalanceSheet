@@ -201,10 +201,10 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
         grid-template-columns: 100px 3fr 2fr 60px 30px !important; 
     }
 
-    /* Expenses: Date(130) | Head(1fr) | Amt(140) | Del(30) */
+    /* Expenses: Date(100) | Head(5fr) | Amt(60) | Del(30) */
     #expenseEntries .table-header,
     #expenseEntries .entry-row {
-        grid-template-columns: 130px 1fr 140px 30px !important;
+        grid-template-columns: 100px 5fr 60px 30px !important;
     }
 
     /* 7. FIX: ROW HEIGHT TO MATCH SCREEN */
