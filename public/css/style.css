@@ -185,18 +185,20 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
     }
 }
 
-/* ============================================================
-   PRINT STYLES (KEEP ORIGINAL BUT ENSURE DATE VISIBILITY)
-   ============================================================ */
 @media print {
+    /* Page Setup */
     @page {
         size: landscape;
         margin: 0.5cm;
     }
+
+    /* Background & Color Reset */
     body {
         background: white !important;
         color: black !important;
     }
+
+    /* Hide Unnecessary Elements */
     header > div:last-child,
     .panel-header button,
     .delete-btn,
@@ -205,12 +207,16 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
     #saveLabel {
         display: none !important;
     }
+
+    /* Header Styling */
     header {
         border-bottom: 2px solid #000;
         padding-bottom: 20px;
         margin-bottom: 20px;
         display: flex !important;
     }
+
+    /* Force Side‑by‑Side Layout */
     .main-split {
         display: flex !important;
         flex-direction: row !important;
@@ -218,6 +224,7 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
         width: 100%;
         gap: 10px !important;
     }
+
     .panel {
         flex: 1 !important;
         width: 50% !important;
@@ -227,16 +234,20 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
         margin-bottom: 0;
         break-inside: avoid;
     }
-    /* Income table print: date column wider */
+
+    /* --- INCOME TABLE: narrower date (110px), product gets more space --- */
     #incomeEntries .table-header,
     #incomeEntries .entry-row {
-        grid-template-columns: 140px 3fr 2fr 60px 30px !important;
+        grid-template-columns: 110px 3fr 2fr 60px 30px !important;
     }
-    /* Expense table print */
+
+    /* --- EXPENSE TABLE: date 110px, product (description) gets 5fr, amount 60px, delete 30px --- */
     #expenseEntries .table-header,
     #expenseEntries .entry-row {
-        grid-template-columns: 140px 5fr 60px 30px !important;
+        grid-template-columns: 110px 5fr 60px 30px !important;
     }
+
+    /* Row Height & Alignment */
     .table-header {
         padding: 12px 16px !important;
         min-height: 42px !important;
@@ -251,6 +262,8 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
         align-items: center !important;
         border-bottom: 1px solid #ddd !important;
     }
+
+    /* Input & Text Styling */
     input, .bs-input-plain {
         border: none !important;
         background: transparent !important;
@@ -259,27 +272,40 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
         text-align: left !important;
         font-size: 12pt !important;
     }
-    :root {
-        --text-primary: #000000;
-        --text-secondary: #444444;
-        --income: #008000;
-        --expense: #cc0000;
-        --balance: #b8860b;
+
+    /* --- Ensure product (description) column fits "form & kg" in max 2 lines --- */
+    .entry-row .bs-input-plain,
+    .entry-row input[type="text"] {
+        white-space: normal !important;
+        word-break: break-word !important;
+        line-height: 1.3 !important;
+        max-height: 2.6em !important;     /* approx 2 lines */
+        overflow: hidden !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
     }
-    .summary-card {
-        box-shadow: none;
-        border: 1px solid #ccc;
-        color: black !important;
-        break-inside: avoid;
-        margin-bottom: 20px;
+
+    /* For any custom "form" and "kg" inline elements inside description */
+    .entry-row .description-cell span,
+    .entry-row .description-cell div {
+        display: inline-block !important;
+        white-space: normal !important;
+        line-height: 1.3 !important;
     }
+
+    /* Date column: left-aligned, full visibility */
     .table-header > :first-child,
     .entry-row > :first-child {
         text-align: left !important;
+        overflow: visible !important;
+        white-space: nowrap !important;
     }
+
+    /* Date input styling */
     .entry-row input[type="date"] {
         width: auto !important;
-        min-width: 120px !important;
+        min-width: 100px !important;
         font-size: 11pt !important;
         font-family: monospace !important;
         background: white !important;
@@ -289,8 +315,20 @@ h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
         overflow: visible !important;
         text-align: left !important;
     }
-    .entry-row > :first-child {
-        overflow: visible !important;
-        white-space: nowrap !important;
+
+    /* Summary cards print */
+    .summary-card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        color: black !important;
+        break-inside: avoid;
+        margin-bottom: 20px;
+    }
+    :root {
+        --text-primary: #000000;
+        --text-secondary: #444444;
+        --income: #008000;
+        --expense: #cc0000;
+        --balance: #b8860b;
     }
 }
