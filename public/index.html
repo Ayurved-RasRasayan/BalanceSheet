@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Balance Sheet Manager</title>
+    <title>Balance Sheet Manager (Detailed)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -100,6 +100,9 @@
         .save-dot.saved { background: var(--income); }
         @keyframes pulseDot { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
 
+        .sync-pulse { animation: spinPulse 2s infinite linear; }
+        @keyframes spinPulse { 0% { transform: rotate(0deg); opacity: 0.5; } 50% { opacity: 1; } 100% { transform: rotate(360deg); opacity: 0.5; } }
+
         .order-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--income-soft); color: var(--income); font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.5px; }
         
         .empty-state { padding: 30px 20px; text-align: center; color: var(--text-muted); }
@@ -124,7 +127,7 @@
     <div class="bg-blob" style="width:300px;height:300px;background:var(--balance);top:40%;left:50%;"></div>
 
     <!-- Main container -->
-    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <div class="relative z-10 max-w-8xl mx-auto px-4 sm:px-6 py-6">
 
         <!-- Header -->
         <header class="flex flex-wrap items-center justify-between gap-4 mb-8">
@@ -134,7 +137,12 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-bold tracking-tight" style="color:var(--text-primary)">Balance Sheet</h1>
-                    <p class="text-xs" style="color:var(--text-muted)">Auto-syncs & auto-saves to MongoDB</p>
+                    <p class="text-xs flex items-center gap-2" style="color:var(--text-muted)">
+                        Auto-syncs & auto-saves to MongoDB
+                        <span id="syncStatus" class="opacity-0 transition-opacity duration-300" style="color:var(--balance); font-size:10px;">
+                            <i class="fa-solid fa-arrows-rotate sync-pulse"></i> Syncing...
+                        </span>
+                    </p>
                 </div>
             </div>
 
@@ -151,7 +159,7 @@
                     style="background:var(--income-soft);border:1px solid rgba(16,185,129,0.2);color:var(--income);"
                     onclick="manualSync()">
                     <i class="fa-solid fa-arrows-rotate text-xs"></i>
-                    <span>Sync Orders</span>
+                    <span>Sync Now</span>
                 </button>
 
                 <!-- Save Indicator -->
@@ -181,7 +189,7 @@
             </div>
         </div>
 
-        <!-- UNIFIED SINGLE PANEL -->
+        <!-- UNIFIED PANEL -->
         <div class="panel">
             <div class="panel-header flex-wrap gap-3">
                 <div class="flex items-center gap-2">
@@ -201,19 +209,27 @@
                 </div>
             </div>
 
-            <!-- Split Layout: Income Left | Divider | Expense Right -->
             <div class="flex main-split">
                 
                 <!-- INCOME SIDE -->
                 <div class="split-col">
-                    <!-- Header Row -->
-                    <div class="grid gap-2 px-5 py-2.5 text-[10px] font-semibold tracking-widest" style="grid-template-columns: 100px 1fr 100px 30px; color:var(--text-muted); border-bottom:1px solid var(--border); background:rgba(16,185,129,0.03);">
-                        <span>DATE</span><span>INCOME HEAD</span><span class="text-right">AMOUNT</span><span></span>
+                    <!-- Header Row: Date | Product | Order No | Qty (Unit) | Amount | Action -->
+                    <div class="grid gap-2 px-5 py-2.5 text-[10px] font-semibold tracking-widest" style="grid-template-columns: 90px 1.5fr 110px 90px 100px 30px; color:var(--text-muted); border-bottom:1px solid var(--border); background:rgba(16,185,129,0.03);">
+                        <span>DATE</span>
+                        <span>PRODUCT NAME</span>
+                        <span>ORDER NO</span>
+                        <span class="text-center">QTY (UNIT)</span>
+                        <span class="text-right">AMOUNT</span>
+                        <span></span>
                     </div>
-                    <div id="incomeEntries" style="max-height: 400px; overflow-y: auto;"></div>
-                    <div class="grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 100px 1fr 100px 30px; border-top: 2px solid var(--border); background:rgba(16,185,129,0.03);">
+                    <div id="incomeEntries" style="max-height: 450px; overflow-y: auto;"></div>
+                    
+                    <!-- Footer Row -->
+                    <div class="grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 90px 1.5fr 110px 90px 100px 30px; border-top: 2px solid var(--border); background:rgba(16,185,129,0.03);">
                         <span></span>
                         <span class="text-xs font-bold tracking-wider" style="color:var(--text-muted)">TOTAL</span>
+                        <span></span>
+                        <span></span>
                         <span id="incomeTotalInline" class="text-sm font-bold font-display text-right" style="color:var(--income)">$0.00</span>
                         <span></span>
                     </div>
@@ -228,7 +244,7 @@
                     <div class="grid gap-2 px-5 py-2.5 text-[10px] font-semibold tracking-widest" style="grid-template-columns: 100px 1fr 100px 30px; color:var(--text-muted); border-bottom:1px solid var(--border); background:rgba(244,63,94,0.03);">
                         <span>DATE</span><span>EXPENSE HEAD</span><span class="text-right">AMOUNT</span><span></span>
                     </div>
-                    <div id="expenseEntries" style="max-height: 400px; overflow-y: auto;"></div>
+                    <div id="expenseEntries" style="max-height: 450px; overflow-y: auto;"></div>
                     <div class="grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 100px 1fr 100px 30px; border-top: 2px solid var(--border); background:rgba(244,63,94,0.03);">
                         <span></span>
                         <span class="text-xs font-bold tracking-wider" style="color:var(--text-muted)">TOTAL</span>
@@ -247,7 +263,7 @@
 
     <script>
     // ============================================================
-    // DATABASE SERVICE — Real MongoDB API Layer
+    // DATABASE SERVICE
     // ============================================================
     const DB = {
         async find(collection) {
@@ -307,7 +323,8 @@
         saveTimeout: null,
         incomeData: [],
         expenseData: [],
-        orderData: []
+        orderData: [],
+        lastOrderCount: 0
     };
 
     // ============================================================
@@ -354,11 +371,23 @@
         incomeRows.forEach(row => {
             const id = row.dataset.entryId;
             const dateInput = row.querySelector('[data-field="date"]');
-            const headInput = row.querySelector('[data-field="head"]');
+            const productInput = row.querySelector('[data-field="product"]');
+            const orderNoInput = row.querySelector('[data-field="orderNo"]');
+            const qtyInput = row.querySelector('[data-field="qtyUnit"]');
             const amountInput = row.querySelector('[data-field="amount"]');
-            const orderId = row.dataset.orderId || '';
-            if (id && dateInput && headInput && amountInput) {
-                incomes.push({ _id: id, date: dateInput.value, head: headInput.value, amount: parseFloat(amountInput.value) || 0, orderId });
+            
+            if (id && dateInput && amountInput) {
+                incomes.push({ 
+                    _id: id, 
+                    date: dateInput.value, 
+                    product: productInput.value,
+                    orderNo: orderNoInput.value,
+                    qtyUnit: qtyInput.value,
+                    amount: parseFloat(amountInput.value) || 0,
+                    // Keep legacy fields for compatibility if needed
+                    head: productInput.value, 
+                    orderId: orderNoInput.value 
+                });
             }
         });
 
@@ -394,32 +423,67 @@
     // ============================================================
     // SYNCING LOGIC
     // ============================================================
+    
+    function showSyncStatus(active) {
+        const el = document.getElementById('syncStatus');
+        el.style.opacity = active ? '1' : '0';
+    }
+
     async function autoSyncOrders() {
-        state.orderData = await DB.find('orders');
-        const existingOrderIds = new Set(state.incomeData.filter(e => e.orderId).map(e => e.orderId));
-        const newOrders = state.orderData.filter(o => !existingOrderIds.has(o.orderNo));
+        showSyncStatus(true);
+        const freshOrders = await DB.find('orders');
+        
+        // Check for new orders by Order No
+        const existingOrderNos = new Set(state.incomeData.filter(e => e.orderNo).map(e => e.orderNo));
+        const newOrders = freshOrders.filter(o => o.orderNo && !existingOrderNos.has(o.orderNo));
 
         if (newOrders.length > 0) {
+            state.orderData = freshOrders;
+            
             for (const order of newOrders) {
+                // Extract detailed fields from order object
+                // Defaults provided if fields are missing in DB
+                const productName = order.product || order.name || 'General Item';
+                const orderId = order.orderNo || 'N/A';
+                const productId = order.productId || order.id || '';
+                const qty = order.qty || order.quantity || '';
+                const unit = order.unit || order.formFactor || '';
+                
+                // Combine Qty and Unit, e.g., "50" + "kg" = "50 kg"
+                const qtyDisplay = qty ? (unit ? `${qty} ${unit}` : `${qty}`) : '';
+
                 const newEntry = await DB.insertOne('income', {
-                    date: order.date,
-                    head: `${order.orderNo} — ${order.customer || ''}`,
-                    amount: order.amount,
-                    orderId: order.orderNo
+                    date: order.date || todayStr(),
+                    product: productName,
+                    productId: productId,
+                    orderNo: orderId,
+                    qtyUnit: qtyDisplay,
+                    amount: order.amount || 0,
+                    // Legacy mapping
+                    head: `${orderId} — ${productName}`,
+                    orderId: orderId 
                 });
                 if (newEntry) state.incomeData.push(newEntry);
             }
+            
+            const currentMonthNewOrders = newOrders.filter(o => isDateInMonth(o.date));
+            if(currentMonthNewOrders.length > 0) {
+                renderIncomeEntries();
+                updateSummary();
+            }
+            
             showToast(`Auto-synced ${newOrders.length} new order(s)`, 'success');
-            renderIncomeEntries();
-            updateSummary();
+        } else {
+            state.orderData = freshOrders;
         }
+        showSyncStatus(false);
     }
 
     async function manualSync() {
         const btn = document.getElementById('syncBtn');
         btn.style.pointerEvents = 'none';
         const icon = btn.querySelector('i');
-        icon.style.animation = 'spin 0.6s linear';
+        icon.style.animation = 'spinPulse 0.6s linear infinite';
         
         await autoSyncOrders();
         showToast('Manual sync complete', 'info');
@@ -432,12 +496,18 @@
     // DATA OPERATIONS
     // ============================================================
     async function addIncomeEntry() {
-        const newEntry = await DB.insertOne('income', { date: todayStr(), head: '', amount: 0, orderId: '' });
+        const newEntry = await DB.insertOne('income', { 
+            date: todayStr(), 
+            product: '', 
+            orderNo: '', 
+            qtyUnit: '', 
+            amount: 0 
+        });
         if (newEntry) {
             state.incomeData.push(newEntry);
             renderIncomeEntries();
             updateSummary();
-            setTimeout(() => { const row = document.querySelector(`#incomeEntries [data-entry-id="${newEntry._id}"] input[data-field="head"]`); if(row) row.focus(); }, 50);
+            setTimeout(() => { const row = document.querySelector(`#incomeEntries [data-entry-id="${newEntry._id}"] input[data-field="product"]`); if(row) row.focus(); }, 50);
         }
     }
 
@@ -483,17 +553,34 @@
             container.innerHTML = `<div class="empty-state py-8"><p class="text-xs" style="color:var(--text-muted)">No income this month</p></div>`;
             return;
         }
-        container.innerHTML = entries.map(entry => `
-            <div class="entry-row grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 100px 1fr 100px 30px; border-bottom: 1px solid var(--border);" data-entry-id="${entry._id}" data-order-id="${entry.orderId || ''}">
+        container.innerHTML = entries.map(entry => {
+            // Support old 'head' field if 'product' doesn't exist yet (migration safety)
+            const productVal = entry.product || entry.head || '';
+            const orderVal = entry.orderNo || entry.orderId || '';
+            const qtyVal = entry.qtyUnit || '';
+
+            return `
+            <div class="entry-row grid gap-2 px-5 py-3 items-center" style="grid-template-columns: 90px 1.5fr 110px 90px 100px 30px; border-bottom: 1px solid var(--border);" data-entry-id="${entry._id}">
                 <input type="date" class="bs-input" data-field="date" value="${entry.date ? entry.date.split('T')[0] : ''}" aria-label="Date">
-                <div class="flex items-center gap-2">
-                    ${entry.orderId ? '<span class="order-badge">ORD</span>' : ''}
-                    <input type="text" class="bs-input" data-field="head" value="${escapeHtml(entry.head || '')}" placeholder="Income head..." aria-label="Head">
+                
+                <!-- Product Name -->
+                <input type="text" class="bs-input" data-field="product" value="${escapeHtml(productVal)}" placeholder="Product name..." aria-label="Product Name">
+                
+                <!-- Order No -->
+                <div class="relative">
+                    <input type="text" class="bs-input" data-field="orderNo" value="${escapeHtml(orderVal)}" placeholder="ORD-..." aria-label="Order No" ${orderVal ? 'readonly style="opacity:0.7; cursor: not-allowed;"' : ''}>
                 </div>
+                
+                <!-- Qty/Unit -->
+                <input type="text" class="bs-input text-center" data-field="qtyUnit" value="${escapeHtml(qtyVal)}" placeholder="e.g. 50kg" aria-label="Qty & Unit">
+                
+                <!-- Amount -->
                 <input type="number" class="bs-input" data-field="amount" value="${entry.amount || ''}" placeholder="0.00" step="0.01" min="0" aria-label="Amount">
+                
+                <!-- Delete -->
                 <button class="delete-btn text-sm" style="color:var(--text-muted)" onclick="deleteEntry('income','${entry._id}')" aria-label="Delete"><i class="fa-solid fa-xmark"></i></button>
             </div>
-        `).join('');
+        `}).join('');
     }
 
     function renderExpenseEntries() {
